@@ -1,1 +1,0 @@
-# Elastic Log Ingestion Suite
