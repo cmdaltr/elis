@@ -1,0 +1,14 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /opt/logs_to_ingest_processed/*.json
+  json.keys_under_root: true
+  json.add_error_key: true
+  fields_under_root: true
+
+output.elasticsearch:
+  hosts: ["https://your-elastic-server:9200"]
+  username: "elastic"
+  password: "changeme"
+  ssl.verification_mode: none
