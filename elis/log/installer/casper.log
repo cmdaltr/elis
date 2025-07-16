@@ -1,0 +1,16 @@
+umount: can't unmount /media: No such file or directory
+passwd: password expiry information changed.
+dbus-daemon[2634]: [session uid=999 pid=2634] Activating service name='org.gtk.vfs.Daemon' requested by ':1.0' (uid=999 pid=2635 comm="" label="unconfined")
+dbus-daemon[2634]: [session uid=999 pid=2634] Successfully activated service 'org.gtk.vfs.Daemon'
+dbus-daemon[2634]: [session uid=999 pid=2634] Activating service name='org.gtk.vfs.Metadata' requested by ':1.0' (uid=999 pid=2635 comm="" label="unconfined")
+fuse: device not found, try 'modprobe fuse' first
+dbus-daemon[2634]: [session uid=999 pid=2634] Successfully activated service 'org.gtk.vfs.Metadata'
+A connection to the bus can't be made
+Using CD-ROM mount point /cdrom/
+Identifying... [77939cfd8835c423168381f756506703-2]
+Scanning disc for index files...
+Found 0 package indexes, 0 source indexes, 0 translation indexes and 0 signatures
+E: Unable to locate any package files, perhaps this is not a Debian Disc or the wrong architecture?
+E: No CD-ROM could be auto-detected or found using the default mount point.
+   You may try the --cdrom option to set the CD-ROM mount point.
+   See 'man apt-cdrom' for more information about the CD-ROM auto-detection and mount point.
