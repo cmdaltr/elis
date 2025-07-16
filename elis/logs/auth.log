@@ -1535,3 +1535,35 @@ Jul 12 18:19:50 elrond systemd-logind[804]: Session c1 logged out. Waiting for p
 Jul 12 18:19:50 elrond polkitd(authority=local): Unregistered Authentication Agent for unix-session:c1 (system bus name :1.73, object path /org/freedesktop/PolicyKit1/AuthenticationAgent, locale en_US.UTF-8) (disconnected from bus)
 Jul 12 18:19:50 elrond systemd-logind[804]: Removed session c1.
 Jul 12 18:20:12 elrond dbus-daemon[786]: [system] Failed to activate service 'org.bluez': timed out (service_start_timeout=25000ms)
+Jul 12 18:20:51 elrond pkexec: pam_unix(polkit-1:session): session opened for user root(uid=0) by (uid=1000)
+Jul 12 18:20:51 elrond pkexec[3503]: elrond: Executing command [USER=root] [TTY=unknown] [CWD=/home/elrond] [COMMAND=/usr/lib/update-notifier/package-system-locked]
+Jul 12 18:21:32 elrond systemd-logind[804]: Creating /run/nologin, blocking further logins...
+Jul 12 18:21:32 elrond systemd-logind[804]: System is powering down.
+Jul 16 20:40:21 elrond systemd-logind[790]: New seat seat0.
+Jul 16 20:40:21 elrond systemd-logind[790]: Watching system buttons on /dev/input/event0 (Power Button)
+Jul 16 20:40:21 elrond systemd-logind[790]: Watching system buttons on /dev/input/event3 (Parallels Virtual Keyboard)
+Jul 16 20:40:21 elrond systemd-logind[790]: Watching system buttons on /dev/input/event4 (Parallels Virtual Keyboard)
+Jul 16 20:40:21 elrond gdm-launch-environment]: pam_unix(gdm-launch-environment:session): session opened for user gdm(uid=128) by (uid=0)
+Jul 16 20:40:21 elrond systemd-logind[790]: New session c1 of user gdm.
+Jul 16 20:40:21 elrond systemd: pam_unix(systemd-user:session): session opened for user gdm(uid=128) by (uid=0)
+Jul 16 20:40:21 elrond su: (to elrond) root on none
+Jul 16 20:40:21 elrond su: pam_unix(su:session): session opened for user elrond(uid=1000) by (uid=0)
+Jul 16 20:40:21 elrond systemd: pam_unix(systemd-user:session): session opened for user elrond(uid=1000) by (uid=0)
+Jul 16 20:40:22 elrond su: pam_unix(su:session): session closed for user elrond
+Jul 16 20:40:24 elrond polkitd(authority=local): Registered Authentication Agent for unix-session:c1 (system bus name :1.65 [/usr/bin/gnome-shell], object path /org/freedesktop/PolicyKit1/AuthenticationAgent, locale en_US.UTF-8)
+Jul 16 20:40:38 elrond gdm-password]: gkr-pam: unable to locate daemon control file
+Jul 16 20:40:38 elrond gdm-password]: gkr-pam: stashed password to try later in open session
+Jul 16 20:40:38 elrond gdm-password]: pam_unix(gdm-password:session): session opened for user elrond(uid=1000) by (uid=0)
+Jul 16 20:40:38 elrond systemd-logind[790]: New session 3 of user elrond.
+Jul 16 20:40:38 elrond systemd: pam_unix(systemd-user:session): session opened for user elrond(uid=1000) by (uid=0)
+Jul 16 20:40:39 elrond gdm-password]: gkr-pam: gnome-keyring-daemon started properly and unlocked keyring
+Jul 16 20:40:39 elrond gnome-keyring-daemon[2044]: failed to unlock login keyring on startup
+Jul 16 20:40:39 elrond gnome-keyring-daemon[2044]: The PKCS#11 component was already initialized
+Jul 16 20:40:39 elrond gnome-keyring-daemon[2044]: The SSH agent was already initialized
+Jul 16 20:40:39 elrond gnome-keyring-daemon[2044]: The Secret Service was already initialized
+Jul 16 20:40:40 elrond polkitd(authority=local): Registered Authentication Agent for unix-session:3 (system bus name :1.125 [/usr/bin/gnome-shell], object path /org/freedesktop/PolicyKit1/AuthenticationAgent, locale en_US.UTF-8)
+Jul 16 20:40:42 elrond gdm-launch-environment]: pam_unix(gdm-launch-environment:session): session closed for user gdm
+Jul 16 20:40:42 elrond systemd-logind[790]: Session c1 logged out. Waiting for processes to exit.
+Jul 16 20:40:43 elrond polkitd(authority=local): Unregistered Authentication Agent for unix-session:c1 (system bus name :1.65, object path /org/freedesktop/PolicyKit1/AuthenticationAgent, locale en_US.UTF-8) (disconnected from bus)
+Jul 16 20:40:43 elrond systemd-logind[790]: Removed session c1.
+Jul 16 20:40:47 elrond dbus-daemon[776]: [system] Failed to activate service 'org.bluez': timed out (service_start_timeout=25000ms)
