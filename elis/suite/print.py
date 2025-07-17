@@ -3,12 +3,12 @@ import time
 
 
 def print_success(fpath):
-    print(f"Successfully extracted {fpath.split("/")[-1]}!")
+    print(f"Successfully extracted {fpath.split('/')[-1]}!")
     time.sleep(2)
 
 
 def print_incorrect_passwd(fpath):
-    print(f" [x] Incorrect password for {fpath.split("/")[-1]}, please try again...")
+    print(f" [x] Incorrect password for {fpath.split('/')[-1]}, please try again...")
 
 
 def print_fail(fpath):

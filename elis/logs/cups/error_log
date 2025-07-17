@@ -1,6 +1,0 @@
-E [29/Jun/2025:07:38:04 +0100] Canon_MG5700_series: PPD creation failed: No IPP attributes.
-W [29/Jun/2025:07:39:42 +0100] Raw queues are deprecated and will stop working in a future version of CUPS. See https://github.com/OpenPrinting/cups/issues/103
-W [29/Jun/2025:07:40:20 +0100] Raw queues are deprecated and will stop working in a future version of CUPS. See https://github.com/OpenPrinting/cups/issues/103
-W [11/Jul/2025:14:00:05 +0100] Raw queues are deprecated and will stop working in a future version of CUPS. See https://github.com/OpenPrinting/cups/issues/103
-W [12/Jul/2025:18:17:11 +0100] Raw queues are deprecated and will stop working in a future version of CUPS. See https://github.com/OpenPrinting/cups/issues/103
-W [16/Jul/2025:20:40:21 +0100] Raw queues are deprecated and will stop working in a future version of CUPS. See https://github.com/OpenPrinting/cups/issues/103

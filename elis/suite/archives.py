@@ -67,7 +67,7 @@ def extract_tar(fpath, output_dir, mode):
 
 def extract_logs(fpath, filetype):
     timestamp = get_timestamp()
-    output_dir = f"{timestamp}_{fpath.split("/")[-1].split(".")[0]}"
+    output_dir = f"{timestamp}_{fpath.split('/')[-1].split('.')[0]}"
     os.makedirs(output_dir, exist_ok=True)
 
     if filetype == "application/x-7z-compressed":
