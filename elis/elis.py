@@ -1,7 +1,8 @@
 #!/usr/bin/env python3 -tt
-from suite.print import *
-from elis.suite.archives import *
+from suite.archives import *
+from suite.elastic import *
 from suite.parse import *
+from suite.print import *
 import magic
 import os
 import platform
@@ -39,18 +40,20 @@ def check_filetype(fpath):
             f"\n [x] {fpath.split('/')[-1]} is not a valid file type and will be skipped."
         )
 
-    if platform.system() == "Darwin": # python-magic (macOS)
+    if platform.system() == "Darwin":  # python-magic (macOS)
         mime = magic.Magic(mime=True)
         filetype = check_valid_file(mime.from_file(fpath))
-    else: # filemagic (Linux)
+    else:  # filemagic (Linux)
         with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as mime:
             filetype = check_valid_file(mime.id_filename(fpath))
     return filetype
 
 
 def main():
+    # extract all archive files
     archive_extraction()  # perform another extraction iteration if there are nested archives
 
+    # parse and convert log files to json
     for root, _, files in os.walk(LOG_PATH):
         for f in files:
             fpath = os.path.join(root, f)
@@ -58,6 +61,9 @@ def main():
                 filetype = check_filetype(fpath)
                 if filetype == "text/plain":
                     parse_logs(fpath)
+
+    # establish elastic requirements
+    build_filebeat_yaml(LOG_PATH)
 
 
 if __name__ == "__main__":

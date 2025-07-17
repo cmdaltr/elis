@@ -1,4 +1,7 @@
 Brotli==1.1.0
+certifi==2025.7.14
+elastic-transport==8.17.1
+elasticsearch==9.0.2
 filemagic==1.6
 inflate64==1.0.3
 multivolumefile==0.2.3
@@ -7,5 +10,9 @@ py7zr==1.0.0
 pybcj==1.0.6
 pycryptodomex==3.23.0
 pyppmd==1.2.0
+python-dateutil==2.9.0.post0
 pyzstd==0.17.0
+six==1.17.0
 texttable==1.7.0
+typing_extensions==4.14.1
+urllib3==2.5.0
