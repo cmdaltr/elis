@@ -16,12 +16,13 @@ _**For macOS:**_ `brew install libmagic`<br><br>
 `python3 -m pip install -r requirements.txt`
 <br><br>
 
-## Logs
+## Preparing logs
 Place all logs files (archived or unarchived) in `.../elis/elis/logs/`.<br>
 Enter the number of nested archives (if any) you have containing log files.<br>
 Default is 1 but if the logs are not archived, nothing will change.<br>
-> Note: some linux logs will have been archived by the operating system automatically e.g. syslog.1.gz
-<br><br>
+> Note: some linux logs will have been archived by the operating system automatically e.g. syslog.1.gz so it may be worth setting this to 2+ if you know you have some archived logs.
+
+<br>
 
 ## Usage
 `python3 elis.py`
