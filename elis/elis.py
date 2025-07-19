@@ -1,4 +1,5 @@
 #!/usr/bin/env python3 -tt
+from dotenv import load_dotenv
 from suite.archives import *
 from suite.elastic import *
 from suite.parse import *
@@ -8,6 +9,7 @@ import os
 import platform
 
 
+load_dotenv(dotenv_path="./.env")
 LOG_PATH = os.path.join(os.getcwd(), "logs")
 EXT_TYPES = {
     "txt": "text/plain",
@@ -51,7 +53,9 @@ def check_filetype(fpath):
 
 def main():
     # extract all archive files
-    archive_extraction()  # perform another extraction iteration if there are nested archives
+    while 0 < NESTED_ARCHIVES:
+        archive_extraction()
+        NESTED_ARCHIVES -= 1
 
     # parse and convert log files to json
     for root, _, files in os.walk(LOG_PATH):
