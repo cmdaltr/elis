@@ -1,10 +1,11 @@
 #!/usr/bin/env python3 -tt
 from elasticsearch import Elasticsearch, helpers
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
+import json
 import os
 
 
-load_dotenv(dotenv_path="../.env")
+load_dotenv(find_dotenv())
 ELASTIC_HOST = os.getenv("ELASTIC_HOST")
 ELASTIC_USERNAME = os.getenv("ELASTIC_USERNAME")
 ELASTIC_PASSWORD = os.getenv("ELASTIC_PASSWORD")
@@ -50,68 +51,47 @@ def convert_timestamps(data):
 
 def ingest_logs(LOG_PATH):
     es = Elasticsearch(
-        ELASTIC_HOST,
+        hosts=[ELASTIC_HOST],
         basic_auth=(ELASTIC_USERNAME, ELASTIC_PASSWORD),
         verify_certs=SSL_VERIFY,
     )
 
+    hostname = "unknown"
     for root, _, files in os.walk(LOG_PATH):
         for f in files:
             if f.endswith(".json"):
-                json_to_ingest = os.path.join(root, f)
-                """read file as json
-                define index by reading the hostname field from log (have a default value)
-                index_name = f"logs-{hostname.lower()}"
-                json_doc = {"message": jsonblob, "host": {"name": hostname}}
-                actions.append({"_index": index_name, "_source": json_doc})
-                if actions:
-                    helpers.bulk(es, actions)
-                    print(
-                        f"Indexed {len(actions)} logs from {os.path.basename(filepath)}"
-                    )"""
+                json_path = os.path.join(root, f)
+                print(f"Indexing {json_path}")
 
-                """with open(os.path.join(atftroot, atftfile)) as read_json:
-                        json_content = read_json.read()
-                    in_json = StringIO(json_content)
-                    results = [json.dumps(record) for record in json.load(in_json)]
-                    with open(
-                        os.path.join(atftroot, atftfile)[0:-5] + ".ndjson", "w"
-                    ) as write_json:
-                        for result in results:
-                            if result != "{}":
-                                data = '{{"index": {{"_index": "{}"}}}}\n{{"hostname": "{}", "artefact": "{}", {}\n\n'.format(
-                                    case.lower(),
-                                    img.split("::")[0],
-                                    atftfile,
-                                    result[1:]
-                                    .replace("SystemTime", "@timestamp")
-                                    .replace("LastWriteTime", "@timestamp")
-                                    .replace("LastWrite Time", "@timestamp")
-                                    .replace('"LastWrite": "', '"@timestamp": "')
-                                    .replace(
-                                        '"@timestamp": "@timestamp ',
-                                        '"@timestamp": "',
-                                    ),
-                                )
-                                data = re.sub(r'(": )(None)([,:\}])', r'\1"\2"\3', data)
-                                converted_timestamp = convert_timestamps(data)
-                                write_json.write(converted_timestamp)
+                with open(json_path) as f_json:
+                    try:
+                        content = json.load(f_json)
 
-                                ingest_data_command = shlex.split(
-                                    'curl -s -H "Content-Type: application/x-ndjson" -XPOST localhost:9200/{}/_doc/_bulk?pretty --data-binary @"{}"'.format(
-                                        case.lower(), ndjsonfile
-                                    )
-                                )
-                                ingested_data = subprocess.Popen(
-                                    ingest_data_command,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE,
-                                ).communicate()[0]
-                                if "Unexpected character" in str(ingested_data) or 'failed" : 1' in str(
-                                    ingested_data
-                                ):
-                                    print(
-                                        "       Could not ingest\t'{}'\t- perhaps the json did not format correctly?".format(
-                                            ndjsonfile.split("/")[-1]
-                                        )
-                                    )"""
+                        # Normalize to list
+                        if isinstance(content, dict):
+                            docs = [content]
+                        elif isinstance(content, list):
+                            docs = content
+                        else:
+                            print(f"Unsupported format in {json_path}")
+                            continue
+
+                        actions = []
+                        for doc in docs:
+                            hostname = (
+                                doc.get("host", {}).get("name", "unknown").lower()
+                            )
+                            index_name = f"logs-{hostname}"
+                            actions.append(
+                                {
+                                    "_index": index_name,
+                                    "_source": doc,
+                                }
+                            )
+
+                        if actions:
+                            helpers.bulk(es, actions)
+                            print(f"Indexed {len(actions)} documents into {index_name}")
+
+                    except json.JSONDecodeError as e:
+                        print(f"Failed to parse {json_path}: {e}")

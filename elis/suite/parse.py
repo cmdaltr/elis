@@ -1,5 +1,5 @@
 #!/usr/bin/env python3 -tt
-from elis.suite.payloads import *
+from suite.payloads import *
 import json
 import re
 
@@ -9,126 +9,154 @@ jsonlist = []
 
 def parse_logs(filename):
     log_to_ingest = filename + ".json"
+    with open(log_to_ingest, "w") as logjson:
+        logjson.write("[")
     with open(log_to_ingest, "a") as logjson:
         if "syslog" in filename or "auth.log" in filename:
             with open(filename) as logfile:
                 for entry in logfile:
-                    try:
-                        fields = re.findall(
-                            r"^([A-Z][a-z]{2})\s(\d{2})\s(\d{2}:\d{2}:\d{2})\s([^ ]+)\s([^:]+)\[(\d+)\]:\s(.*)",
-                            entry.strip(),
-                        )[0]
+                    match = re.match(
+                        r"^([A-Z][a-z]{2})\s(\d{2})\s(\d{2}:\d{2}:\d{2})\s(\S+)\s?([^:]+)\[(\d+)\]:\s(.*)",
+                        entry,
+                    )
+                    payload = None
+                    if match:
+                        fields = match.groups()
                         payload = build_syslog_pid_payload(fields)
-                    except IndexError:  # no PID
-                        fields = re.findall(
-                            r"^([A-Z][a-z]{2})\s(\d{2})\s(\d{2}:\d{2}:\d{2})\s([^ ]+)\s([^:]+)\]?:\s(.*)",
-                            entry.strip(),
-                        )[0]
-                        payload = build_syslog_nopid_payload(fields)
-                    except Exception as e:
-                        print(e)
-                        break
-                    jsonlist.append(json.dumps(payload))
+                    else:
+                        match = re.match(
+                            r"^([A-Z][a-z]{2})\s(\d{2})\s(\d{2}:\d{2}:\d{2})\s(\S+)\s?([^:]+)\]?:\s(.*)",
+                            entry,
+                        )
+                        if match:
+                            fields = match.groups()
+                            payload = build_syslog_nopid_payload(fields)
+                    if payload:
+                        jsonlist.append(json.dumps(payload))
                 jsondict.clear()
         elif "dmesg" in filename:
             with open(filename) as logfile:
                 for entry in logfile:
-                    fields = re.findall(
-                        r"^\[\s*[\d\.]+\]\s+([^:]+):\s(.*)", entry.strip()
-                    )[0]
-                    payload = build_dmesg_payload(fields)
-                    jsonlist.append(json.dumps(payload))
+                    match = re.match(
+                        r"^\[\s*([\d\.]+)\]\s+([^:]+):\s(.*)", entry.strip()
+                    )
+                    if match:
+                        fields = match.groups()
+                        payload = build_dmesg_payload(fields)
+                        jsonlist.append(json.dumps(payload))
                 jsondict.clear()
         elif "alternatives.log" in filename:
             with open(filename) as logfile:
                 for entry in logfile:
                     if "--install" in entry:
-                        fields = re.findall(
+                        match = re.match(
                             r"^update-alternatives\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}): run with --install (\S+) (\S+) (\S+) (\d+)((?: --slave \S+ \S+ \S+)+)?",
                             entry.strip(),
                         )
-                        payload = build_altinstall_payload(fields)
+                        if match:
+                            fields = match.groups()
+                            payload = build_altinstall_payload(fields)
+                            jsonlist.append(json.dumps(payload))
                     elif "link group" in entry:
-                        fields = re.findall(
+                        match = re.match(
                             r"^update-alternatives\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}): link group (\S+) updated to point to (\S+)",
                             entry.strip(),
                         )
-                        payload = build_altupdate_payload(fields)
-                    jsonlist.append(json.dumps(payload))
+                        if match:
+                            fields = match.groups()
+                            payload = build_altupdate_payload(fields)
+                            jsonlist.append(json.dumps(payload))
                 jsondict.clear()
         elif "bootstrap.log" in filename:
             with open(filename) as logfile:
                 for entry in logfile:
                     if "URL:" in entry:
-                        fields = re.findall(
+                        match = re.match(
                             r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) URL:(\S+) \[(\d+)/\d+\] -> \"([^\"]+)\" \[(\d+)\]",
                             entry.strip(),
                         )
-                        payload = build_bootapt_payload(fields)
+                        if match:
+                            fields = match.groups()
+                            payload = build_bootapt_payload(fields)
+                            jsonlist.append(json.dumps(payload))
                     elif "gpgv: " in entry:
-                        fields = re.findall(
+                        match = re.match(
                             r"^gpgv: Signature made (.+)\ngpgv:\s+using (\S+) key (\S+)\ngpgv: Good signature from \"([^\"]+)\"",
                             entry.strip(),
                         )
-                        payload = build_bootgpg_payload(fields)
+                        if match:
+                            fields = match.groups()
+                            payload = build_bootgpg_payload(fields)
+                            jsonlist.append(json.dumps(payload))
                     elif "dpkg: warning: " in entry:
-                        fields = re.findall(
+                        match = re.match(
                             r"^dpkg: warning: parsing file '([^']+)' near line (\d+) package '([^']+)':\n missing '([^']+)' field",
                             entry.strip(),
                         )
-                        payload = build_bootwarn_payload(fields)
+                        if match:
+                            fields = match.groups()
+                            payload = build_bootwarn_payload(fields)
+                            jsonlist.append(json.dumps(payload))
                     elif "dpkg: " in entry:
-                        fields = re.findall(
+                        match = re.match(
                             r"^(?P<action>Selecting previously unselected package|Preparing to unpack|Unpacking|Setting up) (?P<package>[a-z0-9+.-]+)(?: \((?P<version>[^)]+)\))?",
                             entry.strip(),
                         )
-                        payload = build_bootdpkg_payload(fields)
-                    jsonlist.append(json.dumps(payload))
+                        if match:
+                            fields = match.groups()
+                            payload = build_bootdpkg_payload(fields)
+                            jsonlist.append(json.dumps(payload))
                 jsondict.clear()
         elif "dpkg.log" in filename:
             with open(filename) as logfile:
                 for entry in logfile:
-                    fields = re.findall(
+                    match = re.match(
                         r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) (install|status|configure|upgrade) ([a-z0-9+.-]+):([a-z0-9]+) ([^\s]+)(?: ([^\s]+))?",
                         entry.strip(),
-                    )[0]
-                    payload = build_dpkg_payload(fields)
-                    jsonlist.append(json.dumps(payload))
+                    )
+                    if match:
+                        fields = match.groups()
+                        payload = build_dpkg_payload(fields)
+                        jsonlist.append(json.dumps(payload))
                 jsondict.clear()
         elif "kern.log" in filename:
             with open(filename) as logfile:
                 for entry in logfile:
-                    fields = re.findall(
+                    match = re.match(
                         r"^(\w{3} \d{1,2} \d{2}:\d{2}:\d{2}) (\S+) kernel: \[\s*([\d.]+)\] (.+)",
                         entry.strip(),
                     )
-                    payload = build_kern_payload(fields)
-                    jsonlist.append(json.dumps(payload))
+                    if match:
+                        fields = match.groups()
+                        payload = build_kern_payload(fields)
+                        jsonlist.append(json.dumps(payload))
                 jsondict.clear()
         elif "apt/history.log" in filename:
             with open(filename) as logfile:
                 for entry in logfile:
-                    fields = re.findall(
+                    match = re.match(
                         r"(?ms)^Start-Date: (.+?)\n(.*?)(?:^End-Date: (.+?))$",
                         entry.strip(),
                     )
-                    payload = build_apthist_payload(fields, entry)
-                    jsonlist.append(json.dumps(payload))
+                    if match:
+                        fields = match.groups()
+                        payload = build_apthist_payload(fields, entry)
+                        jsonlist.append(json.dumps(payload))
                 jsondict.clear()
         elif "cups/access_log" in filename:
             with open(filename) as logfile:
                 for entry in logfile:
-                    fields = re.findall(
+                    match = re.match(
                         r"^(\S+) - (\S+) \[([^\]]+)\] \"(\S+) (\S+) ([^\"]+)\" (\d{3}) (\d+) (\S+) (\S+)",
                         entry.strip(),
                     )
-                    payload = build_cups_payload(fields)
-                    jsonlist.append(json.dumps(payload))
+                    if match:
+                        fields = match.groups()
+                        payload = build_cups_payload(fields)
+                        jsonlist.append(json.dumps(payload))
                 jsondict.clear()
-        for each in jsonlist:
-            print(each)
-            import time
-
-            time.sleep(20)
-            # logjson.write(log_json)
+        json_entries = list(set(jsonlist))
+        for each in json_entries[0:-1]:
+            logjson.write(f"{each},")
+        logjson.write(f"{json_entries[-1]}]")
         jsonlist.clear()

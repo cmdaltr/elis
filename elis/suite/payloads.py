@@ -1,9 +1,10 @@
 #!/usr/bin/env python3 -tt
 import re
 
+
 def build_syslog_pid_payload(fields):
     payload = {
-        "@timestamp": f"2025-{fields[0]}-{fields[1]} {fields[2]}", # require year
+        "@timestamp": f"2025-{fields[0]}-{fields[1]} {fields[2]}",  # require year
         "host": fields[3],
     }
     payload["process"] = fields[4]
@@ -14,7 +15,7 @@ def build_syslog_pid_payload(fields):
 
 def build_syslog_nopid_payload(fields):
     payload = {
-        "@timestamp": f"2025-{fields[0]}-{fields[1]} {fields[2]}", # require year
+        "@timestamp": f"2025-{fields[0]}-{fields[1]} {fields[2]}",  # require year
         "host": fields[3],
     }
     payload["message"] = fields[4]
@@ -23,7 +24,7 @@ def build_syslog_nopid_payload(fields):
 
 def build_dmesg_payload(fields):
     payload = {
-        "@timestamp": fields[0], # not provided
+        "@timestamp": fields[0],  # not provided
     }
     payload["uptime"] = fields[0]
     payload["source"] = fields[1]
@@ -124,8 +125,15 @@ def build_apthist_payload(fields, entry):
     if "Commandline" in fields[1]:
         contents = re.findall(r"(?:Commandline: (.+?)\n)", entry.strip())
         payload["command"] = contents[0]
-    if "Install" in fields[1] or "Remove" in fields[1] or "Purge" in fields[1] or "Upgrade" in fields[1]:
-        contents = re.findall(r"((?:^(?:Install|Remove|Purge|Upgrade): .+))", entry.strip())
+    if (
+        "Install" in fields[1]
+        or "Remove" in fields[1]
+        or "Purge" in fields[1]
+        or "Upgrade" in fields[1]
+    ):
+        contents = re.findall(
+            r"((?:^(?:Install|Remove|Purge|Upgrade): .+))", entry.strip()
+        )
         payload["action"] = contents[0]
 
 

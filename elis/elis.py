@@ -1,5 +1,5 @@
 #!/usr/bin/env python3 -tt
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from suite.archives import *
 from suite.elastic import *
 from suite.parse import *
@@ -9,7 +9,7 @@ import os
 import platform
 
 
-load_dotenv(dotenv_path="./.env")
+load_dotenv(find_dotenv())
 LOG_PATH = os.path.join(os.getcwd(), "logs")
 EXT_TYPES = {
     "txt": "text/plain",
@@ -53,6 +53,7 @@ def check_filetype(fpath):
 
 def main():
     # extract all archive files
+    NESTED_ARCHIVES = int(os.getenv("NESTED_ARCHIVES"))
     while 0 < NESTED_ARCHIVES:
         archive_extraction()
         NESTED_ARCHIVES -= 1
@@ -66,8 +67,8 @@ def main():
                 if filetype == "text/plain":
                     parse_logs(fpath)
 
-    # establish elastic requirements
-    build_filebeat_yaml(LOG_PATH)
+    # ingest into elastic
+    ingest_logs(LOG_PATH)
 
 
 if __name__ == "__main__":
