@@ -20,6 +20,7 @@ usage() {
     echo_emoji "  ✅ --script <file>        Specify Python script to run (default: auto-detect)"
     echo_emoji "  ✅ --venv <path>          Custom venv path (default: .venv on Linux)"
     echo_emoji "  ✅ --python <version>     Target Python version for Linux (e.g., 3.9, 3.11)"
+    echo_emoji "  ✅ --reset                Clean all build artifacts and cache files"
     echo_emoji "  ✅ --help                 Show this help message"
     exit 0
 }
@@ -53,8 +54,8 @@ package() {
     mkdir -p "$PROJECT_NAME/macos" "$PROJECT_NAME/linux"
 
     echo_emoji "  📥 Downloading macOS wheels..."
-    pip download -q -r requirements.txt -d "$PROJECT_NAME/macos"
-    pip download -q pip setuptools wheel -d "$PROJECT_NAME/macos"
+    pip3 download -q -r requirements.txt -d "$PROJECT_NAME/macos"
+    pip3 download -q pip setuptools wheel -d "$PROJECT_NAME/macos"
 
     echo_emoji "  🐳 Downloading Linux wheels via Docker..."
     if ! command -v docker >/dev/null 2>&1; then
@@ -326,6 +327,32 @@ zip_package() {
     echo_emoji "  ✅ Created $ZIP_FILE"
 }
 
+# ---------------- RESET ----------------
+reset_repository() {
+    echo_emoji "  🧹 Resetting repository to clean state..."
+
+    # Remove build artifacts
+    echo_emoji "  🗑️ Removing build artifacts..."
+    rm -rf "$PROJECT_NAME" "${PROJECT_NAME}.zip"
+
+    # Remove virtual environments
+    echo_emoji "  🗑️ Removing virtual environments..."
+    rm -rf .venv
+
+    # Remove Python cache files
+    echo_emoji "  🗑️ Removing Python cache..."
+    find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+    find . -name "*.pyc" -delete 2>/dev/null || true
+    find . -name "*.pyo" -delete 2>/dev/null || true
+    find . -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+
+    # Remove macOS files
+    echo_emoji "  🗑️ Removing macOS files..."
+    find . -name ".DS_Store" -delete 2>/dev/null || true
+
+    echo_emoji "  ✅ Repository reset complete!"
+}
+
 # ---------------- MAIN ----------------
 PROJECT_NAME="packages"
 PYTHON_SCRIPT=""
@@ -335,6 +362,7 @@ DO_PACKAGE=false
 DO_INSTALL_LINUX=false
 DO_INSTALL_MACOS=false
 DO_ZIP=false
+DO_RESET=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -367,6 +395,10 @@ while [[ $# -gt 0 ]]; do
             TARGET_PYTHON_VERSION="$2"
             shift 2
             ;;
+        --reset)
+            DO_RESET=true
+            shift
+            ;;
         --help)
             usage
             ;;
@@ -378,7 +410,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Execute based on flags
-if [ "$DO_PACKAGE" = true ]; then
+if [ "$DO_RESET" = true ]; then
+    reset_repository
+elif [ "$DO_PACKAGE" = true ]; then
     package
     if [ "$DO_ZIP" = true ]; then
         zip_package
