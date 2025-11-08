@@ -14,11 +14,11 @@ usage() {
     echo_emoji "  🐍 Usage: $0 [options]"
     echo_emoji "  🐍 Options:"
     echo_emoji "  ✅ --package              Download macOS & Linux wheels and copy source code"
-    echo_emoji "  ✅ --install-linux        Install dependencies and run script on Linux offline"
+    echo_emoji "  ✅ --install-linux        Install dependencies on Linux offline (venv by default)"
     echo_emoji "  ✅ --install-macos        Install dependencies and run script on macOS"
     echo_emoji "  ✅ --zip                  Zip the packaged folder (only valid with --package)"
     echo_emoji "  ✅ --script <file>        Specify Python script to run (default: auto-detect)"
-    echo_emoji "  ✅ --venv <path>          Create/use virtual environment (offline, no internet needed)"
+    echo_emoji "  ✅ --venv <path>          Custom venv path (default: .venv on Linux)"
     echo_emoji "  ✅ --help                 Show this help message"
     exit 0
 }
@@ -99,28 +99,33 @@ install_linux() {
         exit 1
     fi
 
-    # Setup virtual environment if requested
+    # Setup virtual environment (default on Linux)
     PYTHON_CMD="python3"
-    if [ -n "$VENV_PATH" ]; then
-        echo_emoji "  🔧 Setting up virtual environment at $VENV_PATH..."
 
-        if [ ! -d "$VENV_PATH" ]; then
-            echo_emoji "  📦 Creating virtual environment (offline)..."
-            python3 -m venv "$VENV_PATH"
-        else
-            echo_emoji "  ✅ Using existing virtual environment"
-        fi
-
-        # Use the venv's python
-        PYTHON_CMD="$VENV_PATH/bin/python"
-
-        if [ ! -f "$PYTHON_CMD" ]; then
-            echo_emoji "  ❌ Virtual environment Python not found at $PYTHON_CMD"
-            exit 1
-        fi
-
-        echo_emoji "  ✅ Virtual environment ready"
+    # Set default venv path if not specified
+    if [ -z "$VENV_PATH" ]; then
+        VENV_PATH=".venv"
+        echo_emoji "  🔧 Using default virtual environment at $VENV_PATH"
     fi
+
+    echo_emoji "  🔧 Setting up virtual environment at $VENV_PATH..."
+
+    if [ ! -d "$VENV_PATH" ]; then
+        echo_emoji "  📦 Creating virtual environment (offline)..."
+        python3 -m venv "$VENV_PATH"
+    else
+        echo_emoji "  ✅ Using existing virtual environment"
+    fi
+
+    # Use the venv's python
+    PYTHON_CMD="$VENV_PATH/bin/python"
+
+    if [ ! -f "$PYTHON_CMD" ]; then
+        echo_emoji "  ❌ Virtual environment Python not found at $PYTHON_CMD"
+        exit 1
+    fi
+
+    echo_emoji "  ✅ Virtual environment ready"
 
     # Check if pip is available, if not bootstrap it
     if ! $PYTHON_CMD -m pip --version >/dev/null 2>&1; then
