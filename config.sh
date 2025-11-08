@@ -80,8 +80,238 @@ pip download -q pip setuptools wheel -d $PROJECT_NAME/linux
     echo_emoji "  ✅ Packaging complete!"
 }
 
+# ---------------- INSTALL LINUX (OFFLINE) ----------------
+install_linux() {
+    echo_emoji "  🐳 Installing on Linux (offline mode)..."
+
+    # Check if packages directory exists
+    if [ ! -d "$PROJECT_NAME/linux" ]; then
+        echo_emoji "  ❌ Linux packages not found. Run with --package first."
+        exit 1
+    fi
+
+    # Check for python3
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo_emoji "  ❌ python3 not found. Install Python 3 first."
+        exit 1
+    fi
+
+    # Check if pip is available, if not bootstrap it
+    if ! python3 -m pip --version >/dev/null 2>&1; then
+        echo_emoji "  ⚠️ pip not found. Bootstrapping pip..."
+
+        # Try using ensurepip (built into Python 3.4+)
+        if python3 -m ensurepip --version >/dev/null 2>&1; then
+            echo_emoji "  🔧 Using ensurepip to bootstrap pip..."
+            python3 -m ensurepip --default-pip
+        else
+            # Manual bootstrap from wheel file
+            echo_emoji "  🔧 Manually bootstrapping pip from wheel..."
+
+            # Find the pip wheel
+            PIP_WHEEL=$(ls "$PROJECT_NAME/linux"/pip-*.whl 2>/dev/null | head -1)
+            if [ -z "$PIP_WHEEL" ]; then
+                echo_emoji "  ❌ pip wheel not found in $PROJECT_NAME/linux/"
+                exit 1
+            fi
+
+            # Extract pip wheel to temp directory and install
+            TEMP_DIR=$(mktemp -d)
+            unzip -q "$PIP_WHEEL" -d "$TEMP_DIR"
+            PYTHONPATH="$TEMP_DIR" python3 -m pip install --no-index --find-links="$PROJECT_NAME/linux" pip
+            rm -rf "$TEMP_DIR"
+        fi
+
+        # Verify pip is now available
+        if ! python3 -m pip --version >/dev/null 2>&1; then
+            echo_emoji "  ❌ Failed to bootstrap pip. Check Python installation."
+            exit 1
+        fi
+
+        echo_emoji "  ✅ pip bootstrapped successfully!"
+    fi
+
+    echo_emoji "  📦 Installing pip, setuptools, and wheel from local wheels..."
+    python3 -m pip install --no-index --find-links="$PROJECT_NAME/linux" --upgrade pip setuptools wheel
+
+    echo_emoji "  📦 Installing requirements from local wheels..."
+    python3 -m pip install --no-index --find-links="$PROJECT_NAME/linux" -r "$PROJECT_NAME/requirements.txt"
+
+    echo_emoji "  ✅ Linux installation complete!"
+
+    # Run the script if specified or auto-detected
+    if [ -n "$PYTHON_SCRIPT" ]; then
+        echo_emoji "  🚀 Running $PYTHON_SCRIPT..."
+        python3 "$PROJECT_NAME/$PYTHON_SCRIPT"
+    fi
+}
+
+# ---------------- INSTALL MACOS ----------------
+install_macos() {
+    echo_emoji "  🍎 Installing on macOS..."
+
+    # Check if packages directory exists
+    if [ ! -d "$PROJECT_NAME/macos" ]; then
+        echo_emoji "  ❌ macOS packages not found. Run with --package first."
+        exit 1
+    fi
+
+    # Check for python3
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo_emoji "  ❌ python3 not found. Install Python 3 first."
+        exit 1
+    fi
+
+    # Check if pip is available, if not bootstrap it
+    if ! python3 -m pip --version >/dev/null 2>&1; then
+        echo_emoji "  ⚠️ pip not found. Bootstrapping pip..."
+
+        # Try using ensurepip (built into Python 3.4+)
+        if python3 -m ensurepip --version >/dev/null 2>&1; then
+            echo_emoji "  🔧 Using ensurepip to bootstrap pip..."
+            python3 -m ensurepip --default-pip
+        else
+            # Manual bootstrap from wheel file
+            echo_emoji "  🔧 Manually bootstrapping pip from wheel..."
+
+            # Find the pip wheel
+            PIP_WHEEL=$(ls "$PROJECT_NAME/macos"/pip-*.whl 2>/dev/null | head -1)
+            if [ -z "$PIP_WHEEL" ]; then
+                echo_emoji "  ❌ pip wheel not found in $PROJECT_NAME/macos/"
+                exit 1
+            fi
+
+            # Extract pip wheel to temp directory and install
+            TEMP_DIR=$(mktemp -d)
+            unzip -q "$PIP_WHEEL" -d "$TEMP_DIR"
+            PYTHONPATH="$TEMP_DIR" python3 -m pip install --no-index --find-links="$PROJECT_NAME/macos" pip
+            rm -rf "$TEMP_DIR"
+        fi
+
+        # Verify pip is now available
+        if ! python3 -m pip --version >/dev/null 2>&1; then
+            echo_emoji "  ❌ Failed to bootstrap pip. Check Python installation."
+            exit 1
+        fi
+
+        echo_emoji "  ✅ pip bootstrapped successfully!"
+    fi
+
+    echo_emoji "  📦 Installing pip, setuptools, and wheel from local wheels..."
+    python3 -m pip install --no-index --find-links="$PROJECT_NAME/macos" --upgrade pip setuptools wheel
+
+    echo_emoji "  📦 Installing requirements from local wheels..."
+    python3 -m pip install --no-index --find-links="$PROJECT_NAME/macos" -r "$PROJECT_NAME/requirements.txt"
+
+    echo_emoji "  ✅ macOS installation complete!"
+
+    # Run the script if specified or auto-detected
+    if [ -n "$PYTHON_SCRIPT" ]; then
+        echo_emoji "  🚀 Running $PYTHON_SCRIPT..."
+        python3 "$PROJECT_NAME/$PYTHON_SCRIPT"
+    fi
+}
+
+# ---------------- AUTO-DETECT SCRIPT ----------------
+detect_script() {
+    # Look for common main script names in the packages directory
+    for script in main.py app.py run.py; do
+        if [ -f "$PROJECT_NAME/$script" ]; then
+            PYTHON_SCRIPT="$script"
+            echo_emoji "  🔍 Auto-detected script: $PYTHON_SCRIPT"
+            return
+        fi
+    done
+
+    # If no common name found, look for any .py file
+    py_files=("$PROJECT_NAME"/*.py)
+    if [ -f "${py_files[0]}" ]; then
+        PYTHON_SCRIPT=$(basename "${py_files[0]}")
+        echo_emoji "  🔍 Auto-detected script: $PYTHON_SCRIPT"
+        return
+    fi
+
+    echo_emoji "  ⚠️ No Python script found. Skipping execution."
+    PYTHON_SCRIPT=""
+}
+
+# ---------------- ZIP PACKAGE ----------------
+zip_package() {
+    if [ ! -d "$PROJECT_NAME" ]; then
+        echo_emoji "  ❌ Package directory not found. Run with --package first."
+        exit 1
+    fi
+
+    echo_emoji "  📦 Creating zip archive..."
+    ZIP_FILE="${PROJECT_NAME}.zip"
+    rm -f "$ZIP_FILE"
+    zip -r -q "$ZIP_FILE" "$PROJECT_NAME"
+    echo_emoji "  ✅ Created $ZIP_FILE"
+}
+
 # ---------------- MAIN ----------------
 PROJECT_NAME="packages"
+PYTHON_SCRIPT=""
+DO_PACKAGE=false
+DO_INSTALL_LINUX=false
+DO_INSTALL_MACOS=false
+DO_ZIP=false
 
-# Example usage
-package
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --package)
+            DO_PACKAGE=true
+            shift
+            ;;
+        --install-linux)
+            DO_INSTALL_LINUX=true
+            shift
+            ;;
+        --install-macos)
+            DO_INSTALL_MACOS=true
+            shift
+            ;;
+        --zip)
+            DO_ZIP=true
+            shift
+            ;;
+        --script)
+            PYTHON_SCRIPT="$2"
+            shift 2
+            ;;
+        --help)
+            usage
+            ;;
+        *)
+            echo_emoji "  ❌ Unknown option: $1"
+            usage
+            ;;
+    esac
+done
+
+# Execute based on flags
+if [ "$DO_PACKAGE" = true ]; then
+    package
+    if [ "$DO_ZIP" = true ]; then
+        zip_package
+    fi
+elif [ "$DO_INSTALL_LINUX" = true ]; then
+    # Auto-detect script if not specified
+    if [ -z "$PYTHON_SCRIPT" ]; then
+        detect_script
+    fi
+    install_linux
+elif [ "$DO_INSTALL_MACOS" = true ]; then
+    # Auto-detect script if not specified
+    if [ -z "$PYTHON_SCRIPT" ]; then
+        detect_script
+    fi
+    install_macos
+elif [ "$DO_ZIP" = true ]; then
+    # Allow --zip to work standalone
+    zip_package
+else
+    echo_emoji "  ❌ No action specified. Use --help for usage information."
+    usage
+fi
