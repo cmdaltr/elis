@@ -31,18 +31,17 @@ NESTED_ARCHIVES = 2
 # This creates packages.zip containing:
 # - All dependencies (Python wheels for Linux & macOS)
 # - Source code (elis.py, suite/)
-# - Installation script (config.sh)
+# Note: Transfer config.sh separately
 ```
 
 ### 3. Deploy to Oracle Linux (Offline)
 
 ```bash
-# Transfer packages.zip to your Oracle Linux machine
-scp packages.zip user@linux:/path/to/destination/
+# Transfer BOTH files to your Oracle Linux machine
+scp packages.zip config.sh user@linux:/path/to/destination/
 
 # On Oracle Linux (no internet required):
 unzip packages.zip
-cd packages
 ./config.sh --install-linux
 
 # This will:
@@ -84,7 +83,7 @@ python3 elis.py
 ### Oracle Linux (After Deployment)
 
 ```bash
-cd packages
+# From the directory where you extracted packages.zip
 ./config.sh --install-linux
 ```
 
