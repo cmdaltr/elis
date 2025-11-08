@@ -18,6 +18,7 @@ usage() {
     echo_emoji "  ✅ --install-macos        Install dependencies and run script on macOS"
     echo_emoji "  ✅ --zip                  Zip the packaged folder (only valid with --package)"
     echo_emoji "  ✅ --script <file>        Specify Python script to run (default: auto-detect)"
+    echo_emoji "  ✅ --venv <path>          Create/use virtual environment (offline, no internet needed)"
     echo_emoji "  ✅ --help                 Show this help message"
     exit 0
 }
@@ -75,7 +76,9 @@ pip download -q pip setuptools wheel -d $PROJECT_NAME/linux
     echo_emoji "  📄 Copying source code..."
     cp *.py "$PROJECT_NAME/" 2>/dev/null || true
     cp requirements.txt "$PROJECT_NAME/"
+    cp config.sh "$PROJECT_NAME/"
     cp -r src/ "$PROJECT_NAME/" 2>/dev/null || true
+    cp -r elis/ "$PROJECT_NAME/" 2>/dev/null || true
 
     echo_emoji "  ✅ Packaging complete!"
 }
@@ -96,14 +99,37 @@ install_linux() {
         exit 1
     fi
 
+    # Setup virtual environment if requested
+    PYTHON_CMD="python3"
+    if [ -n "$VENV_PATH" ]; then
+        echo_emoji "  🔧 Setting up virtual environment at $VENV_PATH..."
+
+        if [ ! -d "$VENV_PATH" ]; then
+            echo_emoji "  📦 Creating virtual environment (offline)..."
+            python3 -m venv "$VENV_PATH"
+        else
+            echo_emoji "  ✅ Using existing virtual environment"
+        fi
+
+        # Use the venv's python
+        PYTHON_CMD="$VENV_PATH/bin/python"
+
+        if [ ! -f "$PYTHON_CMD" ]; then
+            echo_emoji "  ❌ Virtual environment Python not found at $PYTHON_CMD"
+            exit 1
+        fi
+
+        echo_emoji "  ✅ Virtual environment ready"
+    fi
+
     # Check if pip is available, if not bootstrap it
-    if ! python3 -m pip --version >/dev/null 2>&1; then
+    if ! $PYTHON_CMD -m pip --version >/dev/null 2>&1; then
         echo_emoji "  ⚠️ pip not found. Bootstrapping pip..."
 
         # Try using ensurepip (built into Python 3.4+)
-        if python3 -m ensurepip --version >/dev/null 2>&1; then
+        if $PYTHON_CMD -m ensurepip --version >/dev/null 2>&1; then
             echo_emoji "  🔧 Using ensurepip to bootstrap pip..."
-            python3 -m ensurepip --default-pip
+            $PYTHON_CMD -m ensurepip --default-pip
         else
             # Manual bootstrap from wheel file
             echo_emoji "  🔧 Manually bootstrapping pip from wheel..."
@@ -118,12 +144,12 @@ install_linux() {
             # Extract pip wheel to temp directory and install
             TEMP_DIR=$(mktemp -d)
             unzip -q "$PIP_WHEEL" -d "$TEMP_DIR"
-            PYTHONPATH="$TEMP_DIR" python3 -m pip install --no-index --find-links="$PROJECT_NAME/linux" pip
+            PYTHONPATH="$TEMP_DIR" $PYTHON_CMD -m pip install --no-index --find-links="$PROJECT_NAME/linux" pip
             rm -rf "$TEMP_DIR"
         fi
 
         # Verify pip is now available
-        if ! python3 -m pip --version >/dev/null 2>&1; then
+        if ! $PYTHON_CMD -m pip --version >/dev/null 2>&1; then
             echo_emoji "  ❌ Failed to bootstrap pip. Check Python installation."
             exit 1
         fi
@@ -132,17 +158,17 @@ install_linux() {
     fi
 
     echo_emoji "  📦 Installing pip, setuptools, and wheel from local wheels..."
-    python3 -m pip install --no-index --find-links="$PROJECT_NAME/linux" --upgrade pip setuptools wheel
+    $PYTHON_CMD -m pip install --no-index --find-links="$PROJECT_NAME/linux" --upgrade pip setuptools wheel
 
     echo_emoji "  📦 Installing requirements from local wheels..."
-    python3 -m pip install --no-index --find-links="$PROJECT_NAME/linux" -r "$PROJECT_NAME/requirements.txt"
+    $PYTHON_CMD -m pip install --no-index --find-links="$PROJECT_NAME/linux" -r "$PROJECT_NAME/requirements.txt"
 
     echo_emoji "  ✅ Linux installation complete!"
 
     # Run the script if specified or auto-detected
     if [ -n "$PYTHON_SCRIPT" ]; then
         echo_emoji "  🚀 Running $PYTHON_SCRIPT..."
-        python3 "$PROJECT_NAME/$PYTHON_SCRIPT"
+        $PYTHON_CMD "$PROJECT_NAME/$PYTHON_SCRIPT"
     fi
 }
 
@@ -162,14 +188,37 @@ install_macos() {
         exit 1
     fi
 
+    # Setup virtual environment if requested
+    PYTHON_CMD="python3"
+    if [ -n "$VENV_PATH" ]; then
+        echo_emoji "  🔧 Setting up virtual environment at $VENV_PATH..."
+
+        if [ ! -d "$VENV_PATH" ]; then
+            echo_emoji "  📦 Creating virtual environment..."
+            python3 -m venv "$VENV_PATH"
+        else
+            echo_emoji "  ✅ Using existing virtual environment"
+        fi
+
+        # Use the venv's python
+        PYTHON_CMD="$VENV_PATH/bin/python"
+
+        if [ ! -f "$PYTHON_CMD" ]; then
+            echo_emoji "  ❌ Virtual environment Python not found at $PYTHON_CMD"
+            exit 1
+        fi
+
+        echo_emoji "  ✅ Virtual environment ready"
+    fi
+
     # Check if pip is available, if not bootstrap it
-    if ! python3 -m pip --version >/dev/null 2>&1; then
+    if ! $PYTHON_CMD -m pip --version >/dev/null 2>&1; then
         echo_emoji "  ⚠️ pip not found. Bootstrapping pip..."
 
         # Try using ensurepip (built into Python 3.4+)
-        if python3 -m ensurepip --version >/dev/null 2>&1; then
+        if $PYTHON_CMD -m ensurepip --version >/dev/null 2>&1; then
             echo_emoji "  🔧 Using ensurepip to bootstrap pip..."
-            python3 -m ensurepip --default-pip
+            $PYTHON_CMD -m ensurepip --default-pip
         else
             # Manual bootstrap from wheel file
             echo_emoji "  🔧 Manually bootstrapping pip from wheel..."
@@ -184,12 +233,12 @@ install_macos() {
             # Extract pip wheel to temp directory and install
             TEMP_DIR=$(mktemp -d)
             unzip -q "$PIP_WHEEL" -d "$TEMP_DIR"
-            PYTHONPATH="$TEMP_DIR" python3 -m pip install --no-index --find-links="$PROJECT_NAME/macos" pip
+            PYTHONPATH="$TEMP_DIR" $PYTHON_CMD -m pip install --no-index --find-links="$PROJECT_NAME/macos" pip
             rm -rf "$TEMP_DIR"
         fi
 
         # Verify pip is now available
-        if ! python3 -m pip --version >/dev/null 2>&1; then
+        if ! $PYTHON_CMD -m pip --version >/dev/null 2>&1; then
             echo_emoji "  ❌ Failed to bootstrap pip. Check Python installation."
             exit 1
         fi
@@ -198,17 +247,17 @@ install_macos() {
     fi
 
     echo_emoji "  📦 Installing pip, setuptools, and wheel from local wheels..."
-    python3 -m pip install --no-index --find-links="$PROJECT_NAME/macos" --upgrade pip setuptools wheel
+    $PYTHON_CMD -m pip install --no-index --find-links="$PROJECT_NAME/macos" --upgrade pip setuptools wheel
 
     echo_emoji "  📦 Installing requirements from local wheels..."
-    python3 -m pip install --no-index --find-links="$PROJECT_NAME/macos" -r "$PROJECT_NAME/requirements.txt"
+    $PYTHON_CMD -m pip install --no-index --find-links="$PROJECT_NAME/macos" -r "$PROJECT_NAME/requirements.txt"
 
     echo_emoji "  ✅ macOS installation complete!"
 
     # Run the script if specified or auto-detected
     if [ -n "$PYTHON_SCRIPT" ]; then
         echo_emoji "  🚀 Running $PYTHON_SCRIPT..."
-        python3 "$PROJECT_NAME/$PYTHON_SCRIPT"
+        $PYTHON_CMD "$PROJECT_NAME/$PYTHON_SCRIPT"
     fi
 }
 
@@ -252,6 +301,7 @@ zip_package() {
 # ---------------- MAIN ----------------
 PROJECT_NAME="packages"
 PYTHON_SCRIPT=""
+VENV_PATH=""
 DO_PACKAGE=false
 DO_INSTALL_LINUX=false
 DO_INSTALL_MACOS=false
@@ -278,6 +328,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --script)
             PYTHON_SCRIPT="$2"
+            shift 2
+            ;;
+        --venv)
+            VENV_PATH="$2"
             shift 2
             ;;
         --help)
