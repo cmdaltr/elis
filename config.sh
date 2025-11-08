@@ -133,8 +133,14 @@ install_linux() {
         echo_emoji "  ✅ Using existing virtual environment"
     fi
 
-    # Use the venv's python
-    PYTHON_CMD="$VENV_PATH/bin/python"
+    # Use the venv's python (convert to absolute path)
+    if [[ "$VENV_PATH" = /* ]]; then
+        # Already absolute
+        PYTHON_CMD="$VENV_PATH/bin/python"
+    else
+        # Make it absolute
+        PYTHON_CMD="$(pwd)/$VENV_PATH/bin/python"
+    fi
 
     if [ ! -f "$PYTHON_CMD" ]; then
         echo_emoji "  ❌ Virtual environment Python not found at $PYTHON_CMD"
