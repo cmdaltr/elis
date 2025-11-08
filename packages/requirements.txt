@@ -1,5 +1,6 @@
 Brotli==1.1.0
 certifi==2025.7.14
+dotenv==0.9.9
 elastic-transport==8.17.1
 elasticsearch==9.0.2
 filemagic==1.6
@@ -11,6 +12,8 @@ pybcj==1.0.6
 pycryptodomex==3.23.0
 pyppmd==1.2.0
 python-dateutil==2.9.0.post0
+python-dotenv==1.1.1
+python-magic==0.4.27
 pyzstd==0.17.0
 six==1.17.0
 texttable==1.7.0
