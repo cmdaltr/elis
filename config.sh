@@ -95,6 +95,7 @@ pip download -q pip setuptools wheel -d $PROJECT_NAME/linux
 
     # Create empty logs directory for runtime (don't copy existing logs)
     mkdir -p "$PROJECT_NAME/logs"
+    touch "$PROJECT_NAME/logs/.gitkeep"
 
     echo_emoji "  ✅ Packaging complete!"
 }
@@ -195,8 +196,17 @@ install_linux() {
     # Run the script if specified or auto-detected
     if [ -n "$PYTHON_SCRIPT" ]; then
         echo_emoji "  🚀 Running $PYTHON_SCRIPT..."
+        echo_emoji "  🐍 Using Python: $PYTHON_CMD"
         cd "$PROJECT_NAME"
-        $PYTHON_CMD "$PYTHON_SCRIPT"
+        if [ -f "$PYTHON_SCRIPT" ]; then
+            $PYTHON_CMD "$PYTHON_SCRIPT"
+        else
+            echo_emoji "  ❌ Script not found: $PROJECT_NAME/$PYTHON_SCRIPT"
+            exit 1
+        fi
+    else
+        echo_emoji "  ℹ️ No script specified. To run manually:"
+        echo_emoji "     cd $PROJECT_NAME && $PYTHON_CMD elis.py"
     fi
 }
 
@@ -291,11 +301,13 @@ install_macos() {
 
 # ---------------- AUTO-DETECT SCRIPT ----------------
 detect_script() {
+    echo_emoji "  🔍 Looking for Python scripts in $PROJECT_NAME/..."
+
     # Look for common main script names in packages directory
     for script in main.py app.py run.py elis.py; do
         if [ -f "$PROJECT_NAME/$script" ]; then
             PYTHON_SCRIPT="$script"
-            echo_emoji "  🔍 Auto-detected script: $PYTHON_SCRIPT"
+            echo_emoji "  ✅ Auto-detected script: $PYTHON_SCRIPT"
             return
         fi
     done
@@ -304,11 +316,11 @@ detect_script() {
     py_files=("$PROJECT_NAME"/*.py)
     if [ -f "${py_files[0]}" ]; then
         PYTHON_SCRIPT=$(basename "${py_files[0]}")
-        echo_emoji "  🔍 Auto-detected script: $PYTHON_SCRIPT"
+        echo_emoji "  ✅ Auto-detected script: $PYTHON_SCRIPT"
         return
     fi
 
-    echo_emoji "  ⚠️ No Python script found. Skipping execution."
+    echo_emoji "  ⚠️ No Python script found in $PROJECT_NAME/. Skipping execution."
     PYTHON_SCRIPT=""
 }
 
