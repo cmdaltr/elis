@@ -90,7 +90,6 @@ pip download -q pip setuptools wheel -d $PROJECT_NAME/linux
     cp elis.py "$PROJECT_NAME/" 2>/dev/null || true
     cp .env "$PROJECT_NAME/" 2>/dev/null || true
     cp requirements.txt "$PROJECT_NAME/"
-    cp config.sh "$PROJECT_NAME/"
     cp -r src "$PROJECT_NAME/" 2>/dev/null || true
     cp -r suite "$PROJECT_NAME/" 2>/dev/null || true
 
@@ -104,9 +103,9 @@ pip download -q pip setuptools wheel -d $PROJECT_NAME/linux
 install_linux() {
     echo_emoji "  🐳 Installing on Linux (offline mode)..."
 
-    # Check if linux wheels directory exists (we're already in packages dir)
-    if [ ! -d "linux" ]; then
-        echo_emoji "  ❌ Linux packages not found. Are you in the packages directory?"
+    # Check if packages/linux wheels directory exists
+    if [ ! -d "$PROJECT_NAME/linux" ]; then
+        echo_emoji "  ❌ Linux packages not found. Run with --package first."
         exit 1
     fi
 
@@ -157,16 +156,16 @@ install_linux() {
             echo_emoji "  🔧 Manually bootstrapping pip from wheel..."
 
             # Find the pip wheel
-            PIP_WHEEL=$(ls linux/pip-*.whl 2>/dev/null | head -1)
+            PIP_WHEEL=$(ls $PROJECT_NAME/linux/pip-*.whl 2>/dev/null | head -1)
             if [ -z "$PIP_WHEEL" ]; then
-                echo_emoji "  ❌ pip wheel not found in linux/"
+                echo_emoji "  ❌ pip wheel not found in $PROJECT_NAME/linux/"
                 exit 1
             fi
 
             # Extract pip wheel to temp directory and install
             TEMP_DIR=$(mktemp -d)
             unzip -q "$PIP_WHEEL" -d "$TEMP_DIR"
-            PYTHONPATH="$TEMP_DIR" $PYTHON_CMD -m pip install --no-index --find-links="linux" pip
+            PYTHONPATH="$TEMP_DIR" $PYTHON_CMD -m pip install --no-index --find-links="$PROJECT_NAME/linux" pip
             rm -rf "$TEMP_DIR"
         fi
 
@@ -180,16 +179,17 @@ install_linux() {
     fi
 
     echo_emoji "  📦 Installing pip, setuptools, and wheel from local wheels..."
-    $PYTHON_CMD -m pip install --no-index --find-links="linux" --upgrade pip setuptools wheel
+    $PYTHON_CMD -m pip install --no-index --find-links="$PROJECT_NAME/linux" --upgrade pip setuptools wheel
 
     echo_emoji "  📦 Installing requirements from local wheels..."
-    $PYTHON_CMD -m pip install --no-index --find-links="linux" -r requirements.txt
+    $PYTHON_CMD -m pip install --no-index --find-links="$PROJECT_NAME/linux" -r "$PROJECT_NAME/requirements.txt"
 
     echo_emoji "  ✅ Linux installation complete!"
 
     # Run the script if specified or auto-detected
     if [ -n "$PYTHON_SCRIPT" ]; then
         echo_emoji "  🚀 Running $PYTHON_SCRIPT..."
+        cd "$PROJECT_NAME"
         $PYTHON_CMD "$PYTHON_SCRIPT"
     fi
 }
@@ -285,26 +285,19 @@ install_macos() {
 
 # ---------------- AUTO-DETECT SCRIPT ----------------
 detect_script() {
-    # Look for common main script names in current directory
+    # Look for common main script names in packages directory
     for script in main.py app.py run.py elis.py; do
-        if [ -f "$script" ]; then
+        if [ -f "$PROJECT_NAME/$script" ]; then
             PYTHON_SCRIPT="$script"
-            echo_emoji "  🔍 Auto-detected script: $PYTHON_SCRIPT"
-            return
-        fi
-        # Also check in subdirectories with same name
-        dir=$(echo "$script" | sed 's/\.py$//')
-        if [ -f "$dir/$script" ]; then
-            PYTHON_SCRIPT="$dir/$script"
             echo_emoji "  🔍 Auto-detected script: $PYTHON_SCRIPT"
             return
         fi
     done
 
-    # If no common name found, look for any .py file in current directory
-    py_files=(*.py)
+    # If no common name found, look for any .py file in packages directory
+    py_files=("$PROJECT_NAME"/*.py)
     if [ -f "${py_files[0]}" ]; then
-        PYTHON_SCRIPT="${py_files[0]}"
+        PYTHON_SCRIPT=$(basename "${py_files[0]}")
         echo_emoji "  🔍 Auto-detected script: $PYTHON_SCRIPT"
         return
     fi
