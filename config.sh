@@ -35,7 +35,7 @@ detect_python_version() {
 # Example for packaging step
 package() {
     detect_python_version
-    echo_emoji "  🛠 Cleaning old build..."
+    echo_emoji "  🛠  Cleaning old build..."
     rm -rf "$PROJECT_NAME" 2>/dev/null || true
     mkdir -p "$PROJECT_NAME/macos" "$PROJECT_NAME/linux"
 
@@ -65,7 +65,7 @@ package() {
         done
     fi
 
-    docker run --rm -v "$(pwd)":/project python:$PYTHON_VERSION_DETECTED bash -c "
+    docker run --platform linux/amd64 --rm -v "$(pwd)":/project python:$PYTHON_VERSION_DETECTED bash -c "
 cd /project &&
 pip install --upgrade pip -q &&
 pip download -q -r requirements.txt -d $PROJECT_NAME/linux &&
