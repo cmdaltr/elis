@@ -38,9 +38,10 @@ def check_filetype(fpath):
         for _, types in EXT_TYPES.items():
             if types == filetype:
                 return filetype
-        print(
-            f"\n [x] {fpath.split('/')[-1]} is not a valid file type and will be skipped."
-        )
+        if not fpath.endswith(".json"):
+            print(
+                f"\n [x] {fpath.split('/')[-1]} is not a valid file type and will be skipped."
+            )
 
     if platform.system() == "Darwin":  # python-magic (macOS)
         mime = magic.Magic(mime=True)
@@ -68,7 +69,7 @@ def main():
                     parse_logs(fpath)
 
     # ingest into elastic
-    ingest_logs(LOG_PATH)
+    # ingest_logs(LOG_PATH)
 
 
 if __name__ == "__main__":
