@@ -155,6 +155,8 @@ def parse_logs(filename):
                         payload = build_cups_payload(fields)
                         jsonlist.append(json.dumps(payload))
                 jsondict.clear()
+        else:
+            print(f"\n [x] {filename} is not a recognized log file format.")
         json_entries = list(set(jsonlist))
         for each in json_entries[0:-1]:
             logjson.write(f"{each},")
