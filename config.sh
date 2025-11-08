@@ -19,6 +19,7 @@ usage() {
     echo_emoji "  ✅ --zip                  Zip the packaged folder (only valid with --package)"
     echo_emoji "  ✅ --script <file>        Specify Python script to run (default: auto-detect)"
     echo_emoji "  ✅ --venv <path>          Custom venv path (default: .venv on Linux)"
+    echo_emoji "  ✅ --python <version>     Target Python version for Linux (e.g., 3.9, 3.11)"
     echo_emoji "  ✅ --help                 Show this help message"
     exit 0
 }
@@ -36,6 +37,17 @@ detect_python_version() {
 # Example for packaging step
 package() {
     detect_python_version
+
+    # Use target Python version for Linux if specified, otherwise use detected version
+    if [ -n "$TARGET_PYTHON_VERSION" ]; then
+        LINUX_PYTHON_VERSION="$TARGET_PYTHON_VERSION"
+        echo_emoji "  🐍 Using target Python version for Linux: $LINUX_PYTHON_VERSION"
+    else
+        LINUX_PYTHON_VERSION="$PYTHON_VERSION_DETECTED"
+        echo_emoji "  ⚠️ No --python specified. Using macOS version ($LINUX_PYTHON_VERSION) for Linux wheels."
+        echo_emoji "  ⚠️ This may not match your Oracle Linux Python version!"
+    fi
+
     echo_emoji "  🛠  Cleaning old build..."
     rm -rf "$PROJECT_NAME" 2>/dev/null || true
     mkdir -p "$PROJECT_NAME/macos" "$PROJECT_NAME/linux"
@@ -66,7 +78,7 @@ package() {
         done
     fi
 
-    docker run --platform linux/amd64 --rm -v "$(pwd)":/project python:$PYTHON_VERSION_DETECTED bash -c "
+    docker run --platform linux/amd64 --rm -v "$(pwd)":/project python:$LINUX_PYTHON_VERSION bash -c "
 cd /project &&
 pip install --upgrade pip -q &&
 pip download -q -r requirements.txt -d $PROJECT_NAME/linux &&
@@ -307,6 +319,7 @@ zip_package() {
 PROJECT_NAME="packages"
 PYTHON_SCRIPT=""
 VENV_PATH=""
+TARGET_PYTHON_VERSION=""
 DO_PACKAGE=false
 DO_INSTALL_LINUX=false
 DO_INSTALL_MACOS=false
@@ -337,6 +350,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --venv)
             VENV_PATH="$2"
+            shift 2
+            ;;
+        --python)
+            TARGET_PYTHON_VERSION="$2"
             shift 2
             ;;
         --help)
