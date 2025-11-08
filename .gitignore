@@ -7,6 +7,16 @@ __pycache__/
 *.pyc
 .vscode/*
 
+# Build output (temporary)
+packages/
+packages.zip
+
+# Virtual environment
+.venv/
+
+# Runtime logs
+logs/
+
 # Mac
 .DS_Store
 xcode/
