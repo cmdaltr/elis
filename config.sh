@@ -104,9 +104,16 @@ pip download -q pip setuptools wheel -d $PROJECT_NAME/linux
 install_linux() {
     echo_emoji "  🐳 Installing on Linux (offline mode)..."
 
+    # Auto-extract packages.zip if it exists and packages/ doesn't
+    if [ ! -d "$PROJECT_NAME" ] && [ -f "${PROJECT_NAME}.zip" ]; then
+        echo_emoji "  📦 Extracting ${PROJECT_NAME}.zip..."
+        unzip -q "${PROJECT_NAME}.zip"
+        echo_emoji "  ✅ Extraction complete"
+    fi
+
     # Check if packages/linux wheels directory exists
     if [ ! -d "$PROJECT_NAME/linux" ]; then
-        echo_emoji "  ❌ Linux packages not found. Run with --package first."
+        echo_emoji "  ❌ Linux packages not found. Make sure packages.zip is in the current directory."
         exit 1
     fi
 
