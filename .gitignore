@@ -7,10 +7,6 @@ __pycache__/
 *.pyc
 .vscode/*
 
-# Build output (temporary)
-#packages/
-#packages.zip
-
 # Virtual environment
 .venv/
 

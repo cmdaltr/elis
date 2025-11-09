@@ -34,6 +34,18 @@ def parse_logs(filename):
                     if payload:
                         jsonlist.append(json.dumps(payload))
                 jsondict.clear()
+        elif "history.log" in filename:
+            with open(filename) as logfile:
+                for entry in logfile:
+                    match = re.match(
+                        r"",
+                        entry,
+                    )
+                    if match:
+                        fields = match.groups()
+                        payload = build_history_payload(fields)
+                        jsonlist.append(json.dumps(payload))
+                jsondict.clear()
         elif "dmesg" in filename:
             with open(filename) as logfile:
                 for entry in logfile:
