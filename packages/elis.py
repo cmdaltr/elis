@@ -43,12 +43,9 @@ def check_filetype(fpath):
                 f"\n [x] {fpath.split('/')[-1]} is not a valid file type and will be skipped."
             )
 
-    if platform.system() == "Darwin":  # python-magic (macOS)
-        mime = magic.Magic(mime=True)
-        filetype = check_valid_file(mime.from_file(fpath))
-    else:  # filemagic (Linux)
-        with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as mime:
-            filetype = check_valid_file(mime.id_filename(fpath))
+    # Use python-magic on all platforms
+    mime = magic.Magic(mime=True)
+    filetype = check_valid_file(mime.from_file(fpath))
     return filetype
 
 

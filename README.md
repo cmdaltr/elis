@@ -41,10 +41,10 @@ NESTED_ARCHIVES = 2
 scp packages.zip config.sh user@linux:/path/to/destination/
 
 # On Oracle Linux (no internet required):
-unzip packages.zip
 ./config.sh --install-linux
 
 # This will:
+# - Auto-extract packages.zip
 # - Create a virtual environment (.venv)
 # - Install all dependencies from local wheels
 # - Run elis.py
