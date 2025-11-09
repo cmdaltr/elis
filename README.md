@@ -55,9 +55,14 @@ scp packages.zip config.sh user@linux:/path/to/destination/
 Place log files (archived or unarchived) in `logs/`:
 ```bash
 logs/
-├── syslog.1.gz
-├── application.log
-└── archived-logs.7z
+├──-- HOSTNAME1
+    ├── syslog.1.gz
+    ├── application.log
+    └── archived-logs.7z
+├──-- HOSTNAME2
+    ├── syslog
+    ├── application.7z
+    └── archived-logs.gz
 ```
 
 Set `NESTED_ARCHIVES` in `.env` to the number of archive layers:
@@ -85,6 +90,8 @@ python3 elis.py
 ```bash
 # From the directory where you extracted packages.zip
 ./config.sh --install-linux
+cd packages
+../.venv/bin/python elis.py
 ```
 
 ## config.sh Options
