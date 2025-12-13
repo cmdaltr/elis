@@ -1,0 +1,172 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║             Security Onion 2.4 Automated Installation - Quick Reference      ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌─ BASIC USAGE ─────────────────────────────────────────────────────────────────┐
+│                                                                                │
+│  Manager Node (uses so_manager_config.conf by default):                       │
+│    ./install_so.sh --manager                                                   │
+│                                                                                │
+│  Search Node (uses so_search_config.conf by default):                         │
+│    ./install_so.sh --search                                                    │
+│                                                                                │
+│  Sensor Node (uses so_sensor_config.conf by default):                         │
+│    ./install_so.sh --sensor                                                    │
+│                                                                                │
+│  Custom Config:                                                                │
+│    ./install_so.sh --manager --config /path/to/my_config.conf                 │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ CONFIGURATION FILES ─────────────────────────────────────────────────────────┐
+│                                                                                │
+│  Default Files (edit these before running):                                   │
+│    • so_manager_config.conf  - Manager node settings                          │
+│    • so_search_config.conf   - Search node settings                           │
+│    • so_sensor_config.conf   - Sensor node settings                           │
+│                                                                                │
+│  Key Settings to Configure:                                                   │
+│    ✓ HOSTNAME            - Node hostname                                      │
+│    ✓ MGMT_INTERFACE      - Management NIC (e.g., ens33)                       │
+│    ✓ MONITOR_INTERFACE   - Sniffing NIC (sensors only, e.g., ens34)          │
+│    ✓ ADDRESS_TYPE        - STATIC or DHCP                                     │
+│    ✓ STATIC_IP           - Static IP if not using DHCP                        │
+│    ✓ MANAGER_IP          - Manager IP (for search/sensor nodes)               │
+│    ✓ ADMIN_EMAIL         - Admin email (manager only)                         │
+│    ✓ ADMIN_PASSWORD      - Admin password (manager only)                      │
+│    ✓ HOME_NET            - Internal networks (sensors only)                   │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ INSTALLATION WORKFLOW ───────────────────────────────────────────────────────┐
+│                                                                                │
+│  1. Boot from Security Onion ISO                                              │
+│  2. Complete initial OS installation                                          │
+│  3. Edit configuration file (so_manager_config.conf, etc.)                    │
+│  4. Run: ./install_so.sh --manager (or --search/--sensor)                     │
+│  5. Run: sudo so-setup (interactive)                                           │
+│  6. Access web interface at: https://<your-ip>                                │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ DISTRIBUTED DEPLOYMENT ORDER ────────────────────────────────────────────────┐
+│                                                                                │
+│  1. Install Manager first                                                     │
+│     ./install_so.sh --manager                                                  │
+│     sudo so-setup                                                              │
+│                                                                                │
+│  2. Create remote user on manager                                             │
+│     sudo so-user-add soremote                                                  │
+│                                                                                │
+│  3. Add firewall rules on manager                                             │
+│     sudo so-firewall includehost analyst 192.168.1.0/24                       │
+│                                                                                │
+│  4. Install Search nodes (update MANAGER_IP in config)                        │
+│     ./install_so.sh --search                                                   │
+│     sudo so-setup                                                              │
+│                                                                                │
+│  5. Install Sensor nodes (update MANAGER_IP in config)                        │
+│     ./install_so.sh --sensor                                                   │
+│     sudo so-setup                                                              │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ POST-INSTALLATION COMMANDS ──────────────────────────────────────────────────┐
+│                                                                                │
+│  Check status:                                                                 │
+│    sudo so-status                                                              │
+│                                                                                │
+│  View logs:                                                                    │
+│    sudo tail -f /opt/so/log/manager/*.log                                     │
+│    tail -f /var/log/so-automated-install.log                                  │
+│                                                                                │
+│  Restart services:                                                             │
+│    sudo so-restart                                                             │
+│                                                                                │
+│  Add firewall rule:                                                            │
+│    sudo so-firewall includehost analyst <ip-address>                          │
+│                                                                                │
+│  Add user:                                                                     │
+│    sudo so-user-add <username>                                                 │
+│                                                                                │
+│  List firewall rules:                                                          │
+│    sudo so-firewall list                                                       │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ HELPER SCRIPTS ──────────────────────────────────────────────────────────────┐
+│                                                                                │
+│  Manager Post-Setup Helper:                                                   │
+│    ./manager-helper.sh --create-remote-user    Create soremote user           │
+│    ./manager-helper.sh --add-firewall-rules    Add firewall rules             │
+│    ./manager-helper.sh --generate-join-script  Generate join scripts          │
+│    ./manager-helper.sh --status                Check system status            │
+│    ./manager-helper.sh --all                   Run all setup tasks            │
+│    ./manager-helper.sh --info                  Display config info            │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ MINIMUM REQUIREMENTS ────────────────────────────────────────────────────────┐
+│                                                                                │
+│  All Nodes:                                                                    │
+│    • CPU: 4 cores (x86-64)                                                     │
+│    • RAM: 16 GB                                                                │
+│    • Storage: 200 GB (100GB /, 100GB /nsm)                                    │
+│    • NICs: 1 (management)                                                      │
+│                                                                                │
+│  Sensors (additional):                                                         │
+│    • NICs: 2 (1 management + 1 monitor)                                       │
+│    • Monitor NIC: No IP address, promiscuous mode                             │
+│                                                                                │
+│  Production (recommended):                                                     │
+│    • Manager: 8+ cores, 32+ GB RAM, 500+ GB                                   │
+│    • Search:  8+ cores, 32+ GB RAM, 1+ TB                                     │
+│    • Sensor:  8+ cores, 16+ GB RAM, 500+ GB                                   │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ TROUBLESHOOTING ─────────────────────────────────────────────────────────────┐
+│                                                                                │
+│  Config file not found:                                                        │
+│    → Ensure so_manager_config.conf (or sensor/search) is in current dir       │
+│    → Or specify path: ./install_so.sh --manager --config /path/to/config      │
+│                                                                                │
+│  Interface not found:                                                          │
+│    → Check interface names: ip link show                                      │
+│    → Update MGMT_INTERFACE/MONITOR_INTERFACE in config                        │
+│                                                                                │
+│  Cannot access web interface:                                                  │
+│    → Check firewall: sudo so-firewall list                                    │
+│    → Add your IP: sudo so-firewall includehost analyst <your-ip>              │
+│                                                                                │
+│  Services not starting:                                                        │
+│    → Check logs: sudo tail -f /opt/so/log/manager/*.log                       │
+│    → Check Docker: sudo docker ps -a                                          │
+│    → Restart: sudo so-restart                                                  │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ USEFUL PATHS ────────────────────────────────────────────────────────────────┐
+│                                                                                │
+│  Configuration:    /opt/so/conf/                                              │
+│  Logs:             /opt/so/log/                                               │
+│  Data:             /nsm/                                                       │
+│  Pillar files:     /opt/so/saltstack/local/pillar/                            │
+│  Install log:      /var/log/so-automated-install.log                          │
+│  Automation:       /root/so-automation/                                       │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌─ RESOURCES ───────────────────────────────────────────────────────────────────┐
+│                                                                                │
+│  Documentation:    https://docs.securityonion.net/en/2.4/                     │
+│  GitHub:           https://github.com/Security-Onion-Solutions/securityonion  │
+│  Support:          https://github.com/Security-Onion-Solutions/               │
+│                    securityonion/discussions                                   │
+│  Training:         https://securityonionsolutions.com/training                │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  For detailed documentation, see README.md                                    ║
+╚══════════════════════════════════════════════════════════════════════════════╝

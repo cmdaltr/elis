@@ -1,0 +1,110 @@
+#!/usr/bin/expect -f
+
+################################################################################
+# Security Onion Expect Automation Wrapper
+# This script automates the interactive so-setup process
+# Usage: ./so-setup-expect.exp <config_file>
+################################################################################
+
+set timeout 600
+set config_file [lindex $argv 0]
+
+if {$config_file == ""} {
+    puts "Usage: $argv0 <config_file>"
+    exit 1
+}
+
+# Load configuration
+source $config_file
+
+# Start the setup
+spawn sudo bash so-setup
+
+# Initial setup questions
+expect {
+    "Do you want to configure Security Onion?" {
+        send "yes\r"
+        exp_continue
+    }
+    "Choose installation type" {
+        send "$INSTALL_TYPE\r"
+        exp_continue
+    }
+    "Enter hostname" {
+        send "$HOSTNAME\r"
+        exp_continue
+    }
+    "Select management interface" {
+        send "$MGMT_INTERFACE\r"
+        exp_continue
+    }
+    "Configure management interface" {
+        if {$ADDRESS_TYPE == "STATIC"} {
+            send "STATIC\r"
+        } else {
+            send "DHCP\r"
+        }
+        exp_continue
+    }
+    "Enter IP address" {
+        send "$STATIC_IP\r"
+        exp_continue
+    }
+    "Enter netmask" {
+        send "$NETMASK\r"
+        exp_continue
+    }
+    "Enter gateway" {
+        send "$GATEWAY\r"
+        exp_continue
+    }
+    "Enter DNS server" {
+        send "$DNS_SERVER\r"
+        exp_continue
+    }
+    "Enter admin email" {
+        send "$ADMIN_EMAIL\r"
+        exp_continue
+    }
+    "Enter admin password" {
+        send "$ADMIN_PASSWORD\r"
+        exp_continue
+    }
+    "Confirm admin password" {
+        send "$ADMIN_PASSWORD\r"
+        exp_continue
+    }
+    "Select monitor interface" {
+        send "$MONITOR_INTERFACE\r"
+        exp_continue
+    }
+    "Enter HOME_NET" {
+        send "$HOME_NET\r"
+        exp_continue
+    }
+    "Manager IP address" {
+        send "$MANAGER_IP\r"
+        exp_continue
+    }
+    "Manager username" {
+        send "$MANAGER_USER\r"
+        exp_continue
+    }
+    "Manager password" {
+        send "$MANAGER_PASSWORD\r"
+        exp_continue
+    }
+    "Proceed with installation?" {
+        send "yes\r"
+        exp_continue
+    }
+    eof {
+        puts "Setup completed"
+    }
+    timeout {
+        puts "Setup timed out"
+        exit 1
+    }
+}
+
+wait
