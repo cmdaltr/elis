@@ -17,3 +17,6 @@ logs/
 # Mac
 .DS_Store
 xcode/
+
+# ISO files
+#*.iso
