@@ -1,110 +1,458 @@
 #!/usr/bin/expect -f
 
 ################################################################################
-# Security Onion Expect Automation Wrapper
-# This script automates the interactive so-setup process
-# Usage: ./so-setup-expect.exp <config_file>
+# Security Onion Expect Automation Script
+# Automates the so-setup interactive installer
+# Called by install_so.sh with environment variables set
 ################################################################################
 
+# Increase timeout for long operations
 set timeout 600
-set config_file [lindex $argv 0]
 
-if {$config_file == ""} {
-    puts "Usage: $argv0 <config_file>"
-    exit 1
+# Get environment variables from bash wrapper
+set NODE_TYPE $env(NODE_TYPE)
+set HOSTNAME $env(HOSTNAME)
+set STATIC_IP $env(STATIC_IP)
+set NETWORK_RANGE $env(NETWORK_RANGE)
+set GATEWAY $env(GATEWAY)
+set DNS_SERVER $env(DNS_SERVER)
+set DNS_SEARCH_DOMAIN $env(DNS_SEARCH_DOMAIN)
+set ADMIN_EMAIL $env(ADMIN_EMAIL)
+set ADMIN_PASSWORD $env(ADMIN_PASSWORD)
+set ANALYST_IP_RANGE $env(ANALYST_IP_RANGE)
+
+# Manager IP for search/sensor nodes
+if {[info exists env(MANAGER_IP)]} {
+    set MANAGER_IP $env(MANAGER_IP)
+} else {
+    set MANAGER_IP ""
 }
 
-# Load configuration
-source $config_file
+# Debug output
+puts "========================================"
+puts "Security Onion Automated Setup"
+puts "========================================"
+puts "Node Type: $NODE_TYPE"
+puts "Hostname: $HOSTNAME"
+puts "Static IP: $STATIC_IP"
+puts "Network Range: $NETWORK_RANGE"
+puts "Gateway: $GATEWAY"
+puts "DNS: $DNS_SERVER"
+puts "========================================"
 
-# Start the setup
-spawn sudo bash so-setup
+# Start so-setup
+spawn sudo so-setup
 
-# Initial setup questions
+################################################################################
+# Helper procedures
+################################################################################
+
+# Select Yes in a Yes/No dialog (Yes is typically default/first)
+proc select_yes {} {
+    send "\r"
+}
+
+# Select No in a Yes/No dialog (Tab to No, then Enter)
+proc select_no {} {
+    send "\t\r"
+}
+
+# Navigate menu and select option by sending the option text
+proc select_menu_option {option} {
+    # Send the option - SO installer accepts typed input to jump to option
+    send "$option"
+    sleep 0.3
+    send "\r"
+}
+
+# Clear an input field and enter new value
+proc clear_and_type {value} {
+    # Ctrl+U to clear the line, then type the value
+    send "\025"
+    sleep 0.2
+    send "$value"
+}
+
+# Delete DNS entries and add new one
+proc handle_dns {dns_server} {
+    # Need to delete existing 8.8.8.8 and 8.8.4.4 entries
+    # Then add our DNS server
+    # The DNS dialog typically shows a list - delete existing, add new
+    sleep 0.5
+    # Delete first entry (8.8.8.8)
+    send "d"
+    sleep 0.3
+    # Delete second entry (8.8.4.4)
+    send "d"
+    sleep 0.3
+    # Add new entry
+    send "a"
+    sleep 0.3
+    send "$dns_server\r"
+    sleep 0.3
+    # Confirm/OK
+    send "\r"
+}
+
+################################################################################
+# Main automation flow
+################################################################################
+
 expect {
-    "Do you want to configure Security Onion?" {
-        send "yes\r"
+    # ========================================================================
+    # STEP 1: Welcome - "Yes" to start setup
+    # ========================================================================
+    -re "Continue\\?" {
+        puts "\n>>> Welcome screen - selecting Yes"
+        select_yes
         exp_continue
     }
-    "Choose installation type" {
-        send "$INSTALL_TYPE\r"
+    -re "Would you like to continue\\?" {
+        puts "\n>>> Continue prompt - selecting Yes"
+        select_yes
         exp_continue
     }
-    "Enter hostname" {
-        send "$HOSTNAME\r"
+    -re "Welcome to Security Onion" {
+        puts "\n>>> Welcome screen"
+        sleep 0.5
+        select_yes
         exp_continue
     }
-    "Select management interface" {
-        send "$MGMT_INTERFACE\r"
+
+    # ========================================================================
+    # STEP 2: Install type - Select "Install"
+    # ========================================================================
+    -re "INSTALL|Install Security Onion" {
+        puts "\n>>> Install type - selecting Install"
+        send "I"
+        sleep 0.3
+        send "\r"
         exp_continue
     }
-    "Configure management interface" {
-        if {$ADDRESS_TYPE == "STATIC"} {
-            send "STATIC\r"
+
+    # ========================================================================
+    # STEP 3: Deployment architecture - Select "Distributed"
+    # ========================================================================
+    -re "STANDALONE|DISTRIBUTED|deployment" -i {
+        puts "\n>>> Deployment type - selecting Distributed"
+        send "D"
+        sleep 0.3
+        send "\r"
+        exp_continue
+    }
+
+    # ========================================================================
+    # STEP 4: Deployment state - New or Existing
+    # ========================================================================
+    -re "NEW|EXISTING|deployment state" -i {
+        if {$NODE_TYPE eq "manager"} {
+            puts "\n>>> Deployment state - selecting New Deployment (manager)"
+            send "N"
         } else {
-            send "DHCP\r"
+            puts "\n>>> Deployment state - selecting Existing Deployment"
+            send "E"
+        }
+        sleep 0.3
+        send "\r"
+        exp_continue
+    }
+
+    # ========================================================================
+    # STEP 5: Role selection - MANAGER, SEARCH, or SENSOR
+    # ========================================================================
+    -re "MANAGER|SEARCH|SENSOR|Select.*role|node type" -i {
+        puts "\n>>> Role selection - selecting [string toupper $NODE_TYPE]"
+        switch $NODE_TYPE {
+            "manager" { send "M" }
+            "search"  { send "S" }
+            "sensor"  { send "S" }
+        }
+        sleep 0.3
+        # For sensor, may need to navigate further
+        if {$NODE_TYPE eq "sensor"} {
+            # If SEARCH and SENSOR are both S, use arrow keys
+            send "\033\[B"
+            sleep 0.2
+        }
+        send "\r"
+        exp_continue
+    }
+
+    # ========================================================================
+    # STEP 6: License agreement - Type "AGREE"
+    # ========================================================================
+    -re "license|AGREE|agreement" -i {
+        puts "\n>>> License agreement - typing AGREE"
+        sleep 0.3
+        send "AGREE\r"
+        exp_continue
+    }
+
+    # ========================================================================
+    # STEP 7: Network type - Select "Airgap"
+    # ========================================================================
+    -re "AIRGAP|STANDARD|network mode|connectivity" -i {
+        puts "\n>>> Network type - selecting Airgap"
+        send "A"
+        sleep 0.3
+        send "\r"
+        exp_continue
+    }
+
+    # ========================================================================
+    # STEP 8: Hostname
+    # ========================================================================
+    -re "hostname|Hostname" -i {
+        puts "\n>>> Hostname - entering $HOSTNAME"
+        sleep 0.3
+        clear_and_type $HOSTNAME
+        send "\r"
+        exp_continue
+    }
+
+    # ========================================================================
+    # STEP 9: Description - Leave blank
+    # ========================================================================
+    -re "description|Description" -i {
+        puts "\n>>> Description - leaving blank"
+        sleep 0.3
+        send "\r"
+        exp_continue
+    }
+
+    # ========================================================================
+    # STEP 10: NIC Selection
+    # For manager/search: auto-select first
+    # For sensor: wait for user input (this will pause)
+    # ========================================================================
+    -re "interface|NIC|network interface|Select.*interface" -i {
+        if {$NODE_TYPE eq "sensor"} {
+            puts "\n>>> NIC Selection - SENSOR: Please select interfaces manually"
+            # For sensor, expect user to interact or use first interface
+            # Send Enter to accept default/first
+            sleep 1
+            send "\r"
+        } else {
+            puts "\n>>> NIC Selection - auto-selecting first interface"
+            sleep 0.5
+            send "\r"
         }
         exp_continue
     }
-    "Enter IP address" {
-        send "$STATIC_IP\r"
+
+    # ========================================================================
+    # STEP 10b: Monitor interface (Sensor only)
+    # ========================================================================
+    -re "monitor.*interface|sniffing|capture" -i {
+        puts "\n>>> Monitor interface selection"
+        sleep 0.5
+        send "\r"
         exp_continue
     }
-    "Enter netmask" {
-        send "$NETMASK\r"
+
+    # ========================================================================
+    # STEP 11: IP assignment - Select "STATIC"
+    # ========================================================================
+    -re "STATIC|DHCP|IP.*assignment|addressing" -i {
+        puts "\n>>> IP assignment - selecting STATIC"
+        send "S"
+        sleep 0.3
+        send "\r"
         exp_continue
     }
-    "Enter gateway" {
-        send "$GATEWAY\r"
+
+    # ========================================================================
+    # STEP 12: IP Address / Network range
+    # ========================================================================
+    -re "IP address|Enter.*IP|address.*CIDR|network range" -i {
+        puts "\n>>> IP/Network - entering $STATIC_IP"
+        sleep 0.3
+        # Clear any existing value and enter our IP with CIDR
+        clear_and_type "$STATIC_IP/24"
+        send "\r"
         exp_continue
     }
-    "Enter DNS server" {
-        send "$DNS_SERVER\r"
+
+    # ========================================================================
+    # STEP 13: Gateway
+    # ========================================================================
+    -re "gateway|Gateway" -i {
+        puts "\n>>> Gateway - entering $GATEWAY"
+        sleep 0.3
+        clear_and_type $GATEWAY
+        send "\r"
         exp_continue
     }
-    "Enter admin email" {
-        send "$ADMIN_EMAIL\r"
+
+    # ========================================================================
+    # STEP 14: DNS - Delete existing, add new
+    # ========================================================================
+    -re "DNS.*server|nameserver" -i {
+        puts "\n>>> DNS - configuring $DNS_SERVER"
+        sleep 0.5
+        handle_dns $DNS_SERVER
         exp_continue
     }
-    "Enter admin password" {
+
+    # ========================================================================
+    # STEP 15: DNS Search Domain
+    # ========================================================================
+    -re "search.*domain|DNS.*domain" -i {
+        puts "\n>>> DNS Search Domain - entering $DNS_SEARCH_DOMAIN"
+        sleep 0.3
+        clear_and_type $DNS_SEARCH_DOMAIN
+        send "\r"
+        exp_continue
+    }
+
+    # ========================================================================
+    # STEP 16: Docker IP range - Keep default (Yes)
+    # ========================================================================
+    -re "docker|Docker.*IP|container" -i {
+        puts "\n>>> Docker IP range - keeping default"
+        select_yes
+        exp_continue
+    }
+
+    # ========================================================================
+    # STEP 17: Email/Username
+    # ========================================================================
+    -re "email|Email|username|Username" -i {
+        puts "\n>>> Email/Username - entering $ADMIN_EMAIL"
+        sleep 0.3
+        clear_and_type $ADMIN_EMAIL
+        send "\r"
+        exp_continue
+    }
+
+    # ========================================================================
+    # STEP 18: Password
+    # ========================================================================
+    -re "password|Password" {
+        puts "\n>>> Password - entering (hidden)"
+        sleep 0.3
         send "$ADMIN_PASSWORD\r"
         exp_continue
     }
-    "Confirm admin password" {
+
+    # ========================================================================
+    # STEP 18b: Confirm Password
+    # ========================================================================
+    -re "confirm.*password|Confirm.*Password|Retype|retype" -i {
+        puts "\n>>> Confirm password"
+        sleep 0.3
         send "$ADMIN_PASSWORD\r"
         exp_continue
     }
-    "Select monitor interface" {
-        send "$MONITOR_INTERFACE\r"
+
+    # ========================================================================
+    # STEP 19: Web interface access - Select "IP"
+    # ========================================================================
+    -re "web.*interface|access.*method|IP.*HOSTNAME" -i {
+        puts "\n>>> Web interface access - selecting IP"
+        send "I"
+        sleep 0.3
+        send "\r"
         exp_continue
     }
-    "Enter HOME_NET" {
-        send "$HOME_NET\r"
+
+    # ========================================================================
+    # STEP 20: Confirmation before IP range
+    # ========================================================================
+    -re "ready to proceed|continue with" -i {
+        puts "\n>>> Confirmation - selecting Yes"
+        select_yes
         exp_continue
     }
-    "Manager IP address" {
-        send "$MANAGER_IP\r"
+
+    # ========================================================================
+    # STEP 21: Analyst IP range
+    # ========================================================================
+    -re "analyst.*IP|allowed.*IP|access.*range|single.*range" -i {
+        puts "\n>>> Analyst IP range - entering $ANALYST_IP_RANGE"
+        sleep 0.3
+        clear_and_type $ANALYST_IP_RANGE
+        send "\r"
         exp_continue
     }
-    "Manager username" {
-        send "$MANAGER_USER\r"
+
+    # ========================================================================
+    # STEP 22: Manager IP (for search/sensor nodes)
+    # ========================================================================
+    -re "manager.*IP|Manager.*address" -i {
+        if {$MANAGER_IP ne ""} {
+            puts "\n>>> Manager IP - entering $MANAGER_IP"
+            sleep 0.3
+            clear_and_type $MANAGER_IP
+            send "\r"
+        }
         exp_continue
     }
-    "Manager password" {
-        send "$MANAGER_PASSWORD\r"
+
+    # ========================================================================
+    # STEP 23: Review/Confirm installation
+    # ========================================================================
+    -re "review|Review|proceed|Proceed|begin.*install|start.*install" -i {
+        puts "\n>>> Review - confirming installation"
+        select_yes
         exp_continue
     }
-    "Proceed with installation?" {
-        send "yes\r"
+
+    # ========================================================================
+    # Generic Yes/No prompts - default to Yes
+    # ========================================================================
+    -re "<Yes>.*<No>" {
+        puts "\n>>> Yes/No prompt - selecting Yes"
+        select_yes
         exp_continue
     }
+
+    # ========================================================================
+    # Press Enter to continue prompts
+    # ========================================================================
+    -re "Press.*ENTER|press.*enter|continue" -i {
+        puts "\n>>> Press Enter prompt"
+        send "\r"
+        exp_continue
+    }
+
+    # ========================================================================
+    # Installation progress - just wait
+    # ========================================================================
+    -re "Installing|Configuring|Setting up|Please wait" -i {
+        puts "\n>>> Installation in progress..."
+        exp_continue
+    }
+
+    # ========================================================================
+    # Completion
+    # ========================================================================
+    -re "complete|Complete|finished|Finished|successfully" -i {
+        puts "\n>>> Installation completed!"
+    }
+
+    # ========================================================================
+    # Error handling
+    # ========================================================================
+    -re "error|Error|failed|Failed" -i {
+        puts "\n>>> ERROR detected in output"
+        exp_continue
+    }
+
+    # ========================================================================
+    # End of process
+    # ========================================================================
     eof {
-        puts "Setup completed"
+        puts "\n========================================"
+        puts "Security Onion setup process ended"
+        puts "========================================"
     }
+
     timeout {
-        puts "Setup timed out"
-        exit 1
+        puts "\n>>> TIMEOUT - setup may still be running"
+        puts ">>> Check 'sudo so-status' for service status"
     }
 }
 
 wait
+puts "\nExpect script completed."
