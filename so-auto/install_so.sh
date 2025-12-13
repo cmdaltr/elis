@@ -115,6 +115,11 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
     error "Configuration file not found: $CONFIG_FILE"
 fi
 
+# Check if so-setup is already running
+if pgrep -x "so-setup" > /dev/null 2>&1; then
+    error "so-setup is already running. Please cancel it first (select 'No' or press Ctrl+C), then run this script."
+fi
+
 ################################################################################
 # Prompt for Credentials
 ################################################################################
@@ -175,7 +180,9 @@ source "$CONFIG_FILE"
 # Process sensor-specific configuration
 if [[ "$NODE_TYPE" == "sensor" ]]; then
     HOSTNAME="${HOSTNAME_BASE}${SENSOR_NUMBER}"
-    STATIC_IP="${SENSOR_IP_BASE}${SENSOR_NUMBER}"
+    # Calculate sensor IP: base + offset + sensor_number (e.g., 10.10.20.5 + 1 + 1 = 10.10.20.52)
+    SENSOR_IP_SUFFIX=$((SENSOR_NUMBER + SENSOR_IP_OFFSET))
+    STATIC_IP="${SENSOR_IP_BASE}${SENSOR_IP_SUFFIX}"
     log "Sensor hostname: $HOSTNAME"
     log "Sensor IP: $STATIC_IP"
 fi
@@ -223,6 +230,7 @@ export ADMIN_EMAIL
 export ADMIN_PASSWORD
 export ANALYST_IP_RANGE
 export MANAGER_IP
+export MANAGER_HOSTNAME
 
 ################################################################################
 # Run Expect Script
@@ -242,5 +250,47 @@ fi
 
 log "Running expect script..."
 expect "$EXPECT_SCRIPT"
+
+################################################################################
+# Post-Installation: Manager Firewall Rules
+################################################################################
+
+if [[ "$NODE_TYPE" == "manager" ]]; then
+    echo ""
+    echo "========================================"
+    echo "Post-Installation: Firewall Rules"
+    echo "========================================"
+    echo ""
+
+    # Add firewall rule for search node
+    log "Adding firewall rule for SEARCHNODE (10.10.20.51)..."
+    sudo so-firewall-minion --role=SEARCHNODE --ip=10.10.20.51
+
+    # Prompt for number of sensors
+    SENSOR_COUNT=""
+    while [[ -z "$SENSOR_COUNT" ]] || ! [[ "$SENSOR_COUNT" =~ ^[0-6]$ ]]; do
+        prompt "Enter number of sensors to configure (0-6): "
+        read -r SENSOR_COUNT
+        if ! [[ "$SENSOR_COUNT" =~ ^[0-6]$ ]]; then
+            warn "Please enter a number between 0 and 6"
+            SENSOR_COUNT=""
+        fi
+    done
+
+    # Add firewall rules for each sensor
+    if [[ "$SENSOR_COUNT" -gt 0 ]]; then
+        log "Adding firewall rules for $SENSOR_COUNT sensor(s)..."
+        for i in $(seq 1 "$SENSOR_COUNT"); do
+            SENSOR_IP="10.10.20.5$((i + 1))"
+            log "Adding firewall rule for SENSOR $i ($SENSOR_IP)..."
+            sudo so-firewall-minion --role=SENSOR --ip="$SENSOR_IP"
+        done
+    else
+        log "No sensor firewall rules added"
+    fi
+
+    echo ""
+    log "Firewall rules configured successfully"
+fi
 
 log "Installation script completed"

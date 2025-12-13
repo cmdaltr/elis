@@ -21,11 +21,17 @@ set ADMIN_EMAIL $env(ADMIN_EMAIL)
 set ADMIN_PASSWORD $env(ADMIN_PASSWORD)
 set ANALYST_IP_RANGE $env(ANALYST_IP_RANGE)
 
-# Manager IP for search/sensor nodes
+# Manager IP and hostname for search/sensor nodes
 if {[info exists env(MANAGER_IP)]} {
     set MANAGER_IP $env(MANAGER_IP)
 } else {
     set MANAGER_IP ""
+}
+
+if {[info exists env(MANAGER_HOSTNAME)]} {
+    set MANAGER_HOSTNAME $env(MANAGER_HOSTNAME)
+} else {
+    set MANAGER_HOSTNAME ""
 }
 
 # Debug output
@@ -158,22 +164,22 @@ expect {
     }
 
     # ========================================================================
-    # STEP 5: Role selection - MANAGER, SEARCH, or SENSOR
+    # STEP 5: Role selection - MANAGER, SEARCHNODE, or SENSOR
     # ========================================================================
-    -re "MANAGER|SEARCH|SENSOR|Select.*role|node type" -i {
+    -re "MANAGER|SEARCHNODE|SENSOR|Select.*role|node type" -i {
         puts "\n>>> Role selection - selecting [string toupper $NODE_TYPE]"
         switch $NODE_TYPE {
             "manager" { send "M" }
             "search"  { send "S" }
-            "sensor"  { send "S" }
+            "sensor"  {
+                # Navigate past SEARCHNODE to SENSOR
+                send "S"
+                sleep 0.2
+                send "\033\[B"
+                sleep 0.2
+            }
         }
         sleep 0.3
-        # For sensor, may need to navigate further
-        if {$NODE_TYPE eq "sensor"} {
-            # If SEARCH and SENSOR are both S, use arrow keys
-            send "\033\[B"
-            sleep 0.2
-        }
         send "\r"
         exp_continue
     }
@@ -377,9 +383,22 @@ expect {
     }
 
     # ========================================================================
-    # STEP 22: Manager IP (for search/sensor nodes)
+    # STEP 22: Manager hostname (for search/sensor nodes)
     # ========================================================================
-    -re "manager.*IP|Manager.*address" -i {
+    -re "manager.*hostname|Manager.*hostname" -i {
+        if {$MANAGER_HOSTNAME ne ""} {
+            puts "\n>>> Manager hostname - entering $MANAGER_HOSTNAME"
+            sleep 0.3
+            clear_and_type $MANAGER_HOSTNAME
+            send "\r"
+        }
+        exp_continue
+    }
+
+    # ========================================================================
+    # STEP 23: Manager IP (for search/sensor nodes)
+    # ========================================================================
+    -re "manager.*IP|Manager.*IP|Manager.*address" -i {
         if {$MANAGER_IP ne ""} {
             puts "\n>>> Manager IP - entering $MANAGER_IP"
             sleep 0.3

@@ -7,23 +7,19 @@ This repository contains scripts and configuration files for automating Security
 ```
 Distributed Deployment (Airgap)
 
-┌─────────────────────┐
-│      MANAGER        │
-│   10.10.20.50       │
-│   somanager         │
-│                     │
-│  - Web Interface    │
-│  - Salt Master      │
-│  - Fleet Manager    │
-└─────────────────────┘
-         │
-    ┌────┴─────┬──────────────────────┐
-    │          │                      │
-┌───▼────┐ ┌───▼────┐           ┌─────▼──────┐
-│ SEARCH │ │SENSOR 1│  ...      │ SENSOR N   │
-│10.20.51│ │10.20.61│           │ 10.20.6N   │
-│sosearch│ │sosensor1           │ sosensorN  │
-└────────┘ └────────┘           └────────────┘
+    ┌─────────────────────────────┐
+    │   somanager `10.10.20.50`   │
+    │     - Web Interface         │
+    │     - Salt Master           │
+    │     - Fleet Manager         │
+    └─────────────┬───────────────┘
+                  │
+         ┌────────┴────────────────┬────────────...────────────┐
+         │                         │                           │
+┌────────▼──────────┐    ┌─────────▼─────────┐       ┌─────────▼─────────┐
+│     sosearch      |    │     sosensor1     │  ...  │     sosensorN     │
+│   `10.10.20.51`   │    │   `10.10.20.51`   │  ...  │   `10.10.20.5N`   │
+└───────────────────┘    └───────────────────┘       └───────────────────┘
 ```
 
 ## Files Overview
@@ -42,15 +38,20 @@ Distributed Deployment (Airgap)
 
 Boot from Security Onion ISO and complete initial OS installation.
 
-```bash
-# Install expect (if not already installed)
-sudo apt-get update && sudo apt-get install -y expect
+### Step 2: Cancel Auto-Started Setup
 
+**IMPORTANT:** When you first log in, `so-setup` will start automatically. You must cancel it first:
+
+1. When `so-setup` wizard appears, select **No** or press `Ctrl+C`
+2. Copy scripts to the system (USB, SCP, etc.)
+3. Then run the automated installation
+
+```bash
 # Make scripts executable
 chmod +x install_so.sh so-setup-expect.exp
 ```
 
-### Step 2: Run Installation
+### Step 3: Run Installation
 
 ```bash
 # Install Manager node
