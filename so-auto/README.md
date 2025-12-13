@@ -31,6 +31,8 @@ Distributed Deployment (Airgap)
 | `so_manager.conf` | Configuration for Manager node |
 | `so_search.conf` | Configuration for Search node |
 | `so_sensor.conf` | Configuration for Sensor nodes |
+| `tcl-8.6.10-7.el9.x86_64.rpm` | TCL dependency for expect |
+| `expect-5.45.4-16.el9.x86_64.rpm` | Expect automation tool |
 
 ## Quick Start
 
@@ -44,12 +46,20 @@ Boot from Security Onion ISO and complete initial OS installation.
 
 1. When `so-setup` wizard appears, select **No** or press `Ctrl+C`
 2. Copy scripts to the system (USB, SCP, etc.)
-3. Then run the automated installation
+3. Install expect (required for automation)
+4. Then run the automated installation
 
 ```bash
+# Install expect (RPMs included in so-auto folder)
+sudo rpm -ivh tcl-8.6.10-7.el9.x86_64.rpm expect-5.45.4-16.el9.x86_64.rpm
+
 # Make scripts executable
 chmod +x install_so.sh so-setup-expect.exp
 ```
+
+**Note:** The required RPM files are included in this package:
+- `tcl-8.6.10-7.el9.x86_64.rpm`
+- `expect-5.45.4-16.el9.x86_64.rpm`
 
 ### Step 3: Run Installation
 

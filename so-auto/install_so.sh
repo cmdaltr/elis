@@ -120,6 +120,20 @@ if pgrep -x "so-setup" > /dev/null 2>&1; then
     error "so-setup is already running. Please cancel it first (select 'No' or press Ctrl+C), then run this script."
 fi
 
+# Check for expect (required for automation)
+if ! command -v expect &> /dev/null; then
+    log "expect not found. Installing from included RPMs..."
+    if [[ -f "${SCRIPT_DIR}/tcl-8.6.10-7.el9.x86_64.rpm" ]] && [[ -f "${SCRIPT_DIR}/expect-5.45.4-16.el9.x86_64.rpm" ]]; then
+        rpm -ivh "${SCRIPT_DIR}/tcl-8.6.10-7.el9.x86_64.rpm" "${SCRIPT_DIR}/expect-5.45.4-16.el9.x86_64.rpm"
+        if ! command -v expect &> /dev/null; then
+            error "Failed to install expect"
+        fi
+        log "expect installed successfully"
+    else
+        error "expect is not installed and RPM files not found. Run: rpm -ivh tcl-8.6.10-7.el9.x86_64.rpm expect-5.45.4-16.el9.x86_64.rpm"
+    fi
+fi
+
 ################################################################################
 # Prompt for Credentials
 ################################################################################
@@ -242,10 +256,6 @@ EXPECT_SCRIPT="${SCRIPT_DIR}/so-setup-expect.exp"
 
 if [[ ! -f "$EXPECT_SCRIPT" ]]; then
     error "Expect script not found: $EXPECT_SCRIPT"
-fi
-
-if ! command -v expect &> /dev/null; then
-    error "expect command not found. Install with: apt install expect"
 fi
 
 log "Running expect script..."
