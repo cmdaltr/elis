@@ -29,6 +29,47 @@ whiptail_error_message() {
   echo "ERROR: $msg" >&2
 }
 
+# In unattended mode, validation errors must fail fast (no re-prompt possible)
+whiptail_invalid_input() {
+  whiptail_error_message "Invalid input detected during unattended setup. Check hard-coded values in so-whiptail.manager."
+  exit 1
+}
+
+whiptail_invalid_string() {
+  whiptail_error_message "Invalid string detected during unattended setup. Check hard-coded values in so-whiptail.manager."
+  exit 1
+}
+
+whiptail_invalid_hostname() {
+  whiptail_error_message "Invalid hostname detected during unattended setup. Check HARD_HOSTNAME in so-whiptail.manager."
+  exit 1
+}
+
+whiptail_invalid_user_warning() {
+  whiptail_error_message "Invalid web user/email detected during unattended setup. Check HARD_WEBUSER in so-whiptail.manager."
+  exit 1
+}
+
+whiptail_invalid_pass_warning() {
+  whiptail_error_message "Password rejected during unattended setup. Check HARD_WEBPASS / password policy requirements."
+  exit 1
+}
+
+whiptail_invalid_pass_characters_warning() {
+  whiptail_error_message "Password contains invalid characters during unattended setup. Remove quotes, $, and \\ from HARD_WEBPASS."
+  exit 1
+}
+
+whiptail_passwords_dont_match() {
+  whiptail_error_message "Passwords did not match during unattended setup (unexpected)."
+  exit 1
+}
+
+whiptail_cancel() {
+  whiptail_error_message "Setup cancelled (unattended mode)."
+  exit 1
+}
+
 # Build NIC lists similar to original logic
 filter_unused_nics() {
   nic_list_management=()
@@ -61,6 +102,7 @@ export HARD_HOSTNAME="so-manager"
 export HARD_DESCRIPTION=""
 
 export HARD_MGMT_CIDR="10.10.20.50/24"
+export manager_ip_mask="$HARD_MGMT_CIDR"
 export HARD_GATEWAY="10.10.20.254"
 export HARD_DNS_SERVERS="10.10.20.253"
 export HARD_SEARCH_DOMAIN="corp.example.com"
