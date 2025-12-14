@@ -6,8 +6,15 @@
 # Called by install_so.sh with environment variables set
 ################################################################################
 
+# Enable logging to see what's happening
+log_user 1
+exp_internal 0
+
 # Increase timeout for long operations
 set timeout 600
+
+# Force proper terminal settings
+set stty_init "raw -echo"
 
 # Get environment variables from bash wrapper
 set NODE_TYPE $env(NODE_TYPE)
@@ -541,8 +548,20 @@ if {$NODE_TYPE eq "sensor"} {
 # Wait for completion
 ################################################################################
 
+# Set longer timeout for installation (1 hour)
+set timeout 3600
+
+puts "\n>>> Waiting for installation to complete (this may take ~1 hour)..."
+
 expect {
-    -re "complete|finished|successfully" {
+    -re "complete|finished|successfully|Complete|Finished|Successfully" {
+        puts "\n>>> Installation complete dialog detected"
+        sleep 2
+        # Final confirmation - Tab, Enter
+        puts "\n>>> Sending final Tab, Enter"
+        send "$TAB"
+        sleep 1
+        send "\r"
         puts "\n========================================"
         puts "Installation completed successfully!"
         puts "========================================"
@@ -565,5 +584,6 @@ expect {
     }
 }
 
-wait
-puts "\nExpect script completed."
+# Hand control back to user for debugging
+puts "\n>>> Handing control to user - you can now interact with the installer"
+interact
