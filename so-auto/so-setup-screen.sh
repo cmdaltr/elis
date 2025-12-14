@@ -5,10 +5,8 @@
 # Uses screen's 'stuff' command to send keystrokes to whiptail dialogs
 ################################################################################
 
-# Load configuration
-source "$(dirname "$0")/install_so.conf" 2>/dev/null || {
-    echo "Warning: No config file found, using environment variables"
-}
+# Get script directory
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Configuration - override with environment variables if set
 NODE_TYPE="${NODE_TYPE:-manager}"
@@ -54,12 +52,35 @@ screen -S "$SESSION_NAME" -X quit 2>/dev/null
 sleep 1
 
 # Start installer in a detached screen session
+# Using bash -c to ensure proper execution
 echo ">>> Starting Security Onion setup in screen session..."
-screen -dmS "$SESSION_NAME" sudo /home/tester/SecurityOnion/setup/so-setup iso
+screen -dmS "$SESSION_NAME" bash -c "sudo /home/tester/SecurityOnion/setup/so-setup iso"
+
+# Wait for screen session to start
+sleep 2
+
+# Verify screen session exists
+if ! screen -list | grep -q "$SESSION_NAME"; then
+    echo "ERROR: Failed to create screen session."
+    echo "Trying alternative method..."
+    # Alternative: start screen first, then run command
+    screen -dmS "$SESSION_NAME"
+    sleep 1
+    screen -S "$SESSION_NAME" -X stuff "sudo /home/tester/SecurityOnion/setup/so-setup iso$ENTER"
+fi
 
 # Wait for installer to load
 echo ">>> Waiting for installer to initialize..."
 sleep 5
+
+# Verify session is running
+if ! screen -list | grep -q "$SESSION_NAME"; then
+    echo "ERROR: Screen session not running. Make sure 'screen' is installed."
+    echo "Run: sudo rpm -ivh screen-4.8.0-6.el9.x86_64.rpm"
+    exit 1
+fi
+
+echo ">>> Screen session started successfully"
 
 ################################################################################
 # MANAGER Installation Flow
@@ -170,4 +191,11 @@ echo "========================================"
 echo ""
 
 sleep 2
-screen -r "$SESSION_NAME"
+
+# Check if session still exists before attaching
+if screen -list | grep -q "$SESSION_NAME"; then
+    screen -r "$SESSION_NAME"
+else
+    echo "Screen session ended or not found."
+    echo "To check running sessions: screen -list"
+fi
