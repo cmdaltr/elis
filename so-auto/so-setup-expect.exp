@@ -13,7 +13,6 @@ set timeout 600
 set NODE_TYPE $env(NODE_TYPE)
 set HOSTNAME $env(HOSTNAME)
 set STATIC_IP $env(STATIC_IP)
-set NETWORK_RANGE $env(NETWORK_RANGE)
 set GATEWAY $env(GATEWAY)
 set DNS_SERVER $env(DNS_SERVER)
 set DNS_SEARCH_DOMAIN $env(DNS_SEARCH_DOMAIN)
@@ -41,10 +40,16 @@ puts "========================================"
 puts "Node Type: $NODE_TYPE"
 puts "Hostname: $HOSTNAME"
 puts "Static IP: $STATIC_IP"
-puts "Network Range: $NETWORK_RANGE"
 puts "Gateway: $GATEWAY"
 puts "DNS: $DNS_SERVER"
+puts "DNS Search Domain: $DNS_SEARCH_DOMAIN"
+puts "Analyst IP Range: $ANALYST_IP_RANGE"
 puts "========================================"
+
+# Arrow key sequences
+set DOWN "\033\[B"
+set UP "\033\[A"
+set TAB "\t"
 
 # Start so-setup with iso parameter
 spawn sudo /home/tester/SecurityOnion/setup/so-setup iso
@@ -53,423 +58,486 @@ spawn sudo /home/tester/SecurityOnion/setup/so-setup iso
 # Helper procedures
 ################################################################################
 
-# Select Yes in a Yes/No dialog (Yes is typically default/first)
-proc select_yes {} {
-    send "\r"
-}
-
-# Select No in a Yes/No dialog (Tab to No, then Enter)
-proc select_no {} {
-    send "\t\r"
-}
-
-# Navigate menu and select option by sending the option text
-proc select_menu_option {option} {
-    # Send the option - SO installer accepts typed input to jump to option
-    send "$option"
-    sleep 0.3
-    send "\r"
-}
-
 # Clear an input field and enter new value
 proc clear_and_type {value} {
     # Ctrl+U to clear the line, then type the value
     send "\025"
-    sleep 0.2
+    sleep 2
     send "$value"
 }
 
-# Delete DNS entries and add new one
-proc handle_dns {dns_server} {
-    # Need to delete existing 8.8.8.8 and 8.8.4.4 entries
-    # Then add our DNS server
-    # The DNS dialog typically shows a list - delete existing, add new
-    sleep 0.5
-    # Delete first entry (8.8.8.8)
-    send "d"
-    sleep 0.3
-    # Delete second entry (8.8.4.4)
-    send "d"
-    sleep 0.3
-    # Add new entry
-    send "a"
-    sleep 0.3
-    send "$dns_server\r"
-    sleep 0.3
-    # Confirm/OK
+################################################################################
+# MANAGER Installation Flow
+################################################################################
+
+if {$NODE_TYPE eq "manager"} {
+    # STEP 1: Welcome - Enter for Yes
+    expect -re "."
+    sleep 2
+    puts "\n>>> Step 1: Welcome - pressing Enter for Yes"
     send "\r"
+
+    # STEP 2: Install type - Enter for Install (first option)
+    sleep 2
+    puts "\n>>> Step 2: Install type - pressing Enter for Install"
+    send "\r"
+
+    # STEP 3: Deployment - Down, Down, Down, Enter for Distributed
+    sleep 2
+    puts "\n>>> Step 3: Deployment - selecting Distributed (3x Down, Enter)"
+    send "$DOWN"
+    sleep 2
+    send "$DOWN"
+    sleep 2
+    send "$DOWN"
+    sleep 2
+    send "\r"
+
+    # STEP 4: New deployment - Enter (already selected)
+    sleep 2
+    puts "\n>>> Step 4: New deployment - pressing Enter"
+    send "\r"
+
+    # STEP 5: Role - Enter for Manager (already selected)
+    sleep 2
+    puts "\n>>> Step 5: Role - pressing Enter for Manager"
+    send "\r"
+
+    # STEP 6: License - Type AGREE
+    sleep 2
+    puts "\n>>> Step 6: License - typing AGREE"
+    send "AGREE\r"
+
+    # STEP 7: Network type - Down, Enter for Airgap
+    sleep 2
+    puts "\n>>> Step 7: Network type - selecting Airgap (Down, Enter)"
+    send "$DOWN"
+    sleep 2
+    send "\r"
+
+    # STEP 8: Hostname - Enter hostname from config
+    sleep 2
+    puts "\n>>> Step 8: Hostname - entering $HOSTNAME"
+    clear_and_type $HOSTNAME
+    send "\r"
+
+    # STEP 9: Description - Leave blank, just Enter
+    sleep 2
+    puts "\n>>> Step 9: Description - leaving blank"
+    send "\r"
+
+    # STEP 10: NIC selection - Enter for first/default
+    sleep 2
+    puts "\n>>> Step 10: NIC - pressing Enter for default"
+    send "\r"
+
+    # STEP 11: IP assignment - Enter for Static
+    sleep 2
+    puts "\n>>> Step 11: IP assignment - pressing Enter for Static"
+    send "\r"
+
+    # STEP 12: IP Address/CIDR
+    sleep 2
+    puts "\n>>> Step 12: IP Address - entering $STATIC_IP"
+    clear_and_type $STATIC_IP
+    send "\r"
+
+    # STEP 13: Gateway
+    sleep 2
+    puts "\n>>> Step 13: Gateway - entering $GATEWAY"
+    clear_and_type $GATEWAY
+    send "\r"
+
+    # STEP 14: DNS - Delete defaults (8.8.8.8, 8.8.4.4), add new
+    sleep 2
+    puts "\n>>> Step 14: DNS - removing defaults, adding $DNS_SERVER"
+    # Delete first default (d), delete second default (d), add new (a)
+    send "d"
+    sleep 2
+    send "d"
+    sleep 2
+    send "a"
+    sleep 2
+    send "$DNS_SERVER\r"
+    sleep 2
+    send "\r"
+
+    # STEP 15: DNS Search Domain - Delete default, enter new
+    sleep 2
+    puts "\n>>> Step 15: DNS Search Domain - entering $DNS_SEARCH_DOMAIN"
+    clear_and_type $DNS_SEARCH_DOMAIN
+    send "\r"
+
+    # STEP 16: Docker defaults - Enter for Yes
+    sleep 2
+    puts "\n>>> Step 16: Docker defaults - pressing Enter for Yes"
+    send "\r"
+
+    # STEP 17: Username/Email
+    sleep 2
+    puts "\n>>> Step 17: Username/Email - entering $ADMIN_EMAIL"
+    clear_and_type $ADMIN_EMAIL
+    send "\r"
+
+    # STEP 18: Password (only once)
+    sleep 2
+    puts "\n>>> Step 18: Password - entering password"
+    send "$ADMIN_PASSWORD\r"
+
+    # STEP 19: Web interface access - Enter for IP
+    sleep 2
+    puts "\n>>> Step 19: Web access method - pressing Enter for IP"
+    send "\r"
+
+    # STEP 20: Access to web - Enter for Yes
+    sleep 2
+    puts "\n>>> Step 20: Web access confirmation - pressing Enter"
+    send "\r"
+
+    # STEP 21: Analyst IP range (with .0 as last octet)
+    sleep 2
+    puts "\n>>> Step 21: Analyst IP range - entering $ANALYST_IP_RANGE"
+    clear_and_type $ANALYST_IP_RANGE
+    send "\r"
+
+    # STEP 22: Final confirmation - Tab, Enter
+    sleep 2
+    puts "\n>>> Step 22: Final confirmation - Tab, Enter"
+    send "$TAB"
+    sleep 2
+    send "\r"
+
+    puts "\n>>> Manager setup commands sent - waiting for installation..."
 }
 
 ################################################################################
-# Main automation flow
+# SEARCH NODE Installation Flow
+################################################################################
+
+if {$NODE_TYPE eq "search"} {
+    # STEP 1: Welcome - Enter for Yes
+    expect -re "."
+    sleep 2
+    puts "\n>>> Step 1: Welcome - pressing Enter for Yes"
+    send "\r"
+
+    # STEP 2: Install type - Enter for Install
+    sleep 2
+    puts "\n>>> Step 2: Install type - pressing Enter for Install"
+    send "\r"
+
+    # STEP 3: Deployment - Down, Down, Down, Enter for Distributed
+    sleep 2
+    puts "\n>>> Step 3: Deployment - selecting Distributed (3x Down, Enter)"
+    send "$DOWN"
+    sleep 2
+    send "$DOWN"
+    sleep 2
+    send "$DOWN"
+    sleep 2
+    send "\r"
+
+    # STEP 4: Existing deployment - Down, Enter
+    sleep 2
+    puts "\n>>> Step 4: Existing deployment - Down, Enter"
+    send "$DOWN"
+    sleep 2
+    send "\r"
+
+    # STEP 5: Role - Down for SEARCHNODE, Enter
+    sleep 2
+    puts "\n>>> Step 5: Role - selecting SEARCHNODE (Down, Enter)"
+    send "$DOWN"
+    sleep 2
+    send "\r"
+
+    # STEP 6: License - Type AGREE
+    sleep 2
+    puts "\n>>> Step 6: License - typing AGREE"
+    send "AGREE\r"
+
+    # STEP 7: Network type - Down, Enter for Airgap
+    sleep 2
+    puts "\n>>> Step 7: Network type - selecting Airgap (Down, Enter)"
+    send "$DOWN"
+    sleep 2
+    send "\r"
+
+    # STEP 8: Hostname
+    sleep 2
+    puts "\n>>> Step 8: Hostname - entering $HOSTNAME"
+    clear_and_type $HOSTNAME
+    send "\r"
+
+    # STEP 9: Description - Leave blank
+    sleep 2
+    puts "\n>>> Step 9: Description - leaving blank"
+    send "\r"
+
+    # STEP 10: NIC selection - Enter
+    sleep 2
+    puts "\n>>> Step 10: NIC - pressing Enter"
+    send "\r"
+
+    # STEP 11: IP assignment - Enter for Static
+    sleep 2
+    puts "\n>>> Step 11: IP assignment - pressing Enter for Static"
+    send "\r"
+
+    # STEP 12: IP Address/CIDR
+    sleep 2
+    puts "\n>>> Step 12: IP Address - entering $STATIC_IP"
+    clear_and_type $STATIC_IP
+    send "\r"
+
+    # STEP 13: Gateway
+    sleep 2
+    puts "\n>>> Step 13: Gateway - entering $GATEWAY"
+    clear_and_type $GATEWAY
+    send "\r"
+
+    # STEP 14: DNS
+    sleep 2
+    puts "\n>>> Step 14: DNS - removing defaults, adding $DNS_SERVER"
+    send "d"
+    sleep 2
+    send "d"
+    sleep 2
+    send "a"
+    sleep 2
+    send "$DNS_SERVER\r"
+    sleep 2
+    send "\r"
+
+    # STEP 15: DNS Search Domain
+    sleep 2
+    puts "\n>>> Step 15: DNS Search Domain - entering $DNS_SEARCH_DOMAIN"
+    clear_and_type $DNS_SEARCH_DOMAIN
+    send "\r"
+
+    # STEP 16: Manager hostname
+    sleep 2
+    puts "\n>>> Step 16: Manager hostname - entering $MANAGER_HOSTNAME"
+    clear_and_type $MANAGER_HOSTNAME
+    send "\r"
+
+    # STEP 17: Manager IP (if prompted)
+    sleep 2
+    puts "\n>>> Step 17: Manager IP - entering $MANAGER_IP"
+    clear_and_type $MANAGER_IP
+    send "\r"
+
+    # STEP 18: Docker defaults - Enter for Yes
+    sleep 2
+    puts "\n>>> Step 18: Docker defaults - pressing Enter for Yes"
+    send "\r"
+
+    # STEP 19: Web interface access - Enter for IP
+    sleep 2
+    puts "\n>>> Step 19: Web access method - pressing Enter for IP"
+    send "\r"
+
+    # STEP 20: Access confirmation - Enter
+    sleep 2
+    puts "\n>>> Step 20: Web access confirmation - pressing Enter"
+    send "\r"
+
+    # STEP 21: Analyst IP range
+    sleep 2
+    puts "\n>>> Step 21: Analyst IP range - entering $ANALYST_IP_RANGE"
+    clear_and_type $ANALYST_IP_RANGE
+    send "\r"
+
+    # STEP 22: Final confirmation - Tab, Enter
+    sleep 2
+    puts "\n>>> Step 22: Final confirmation - Tab, Enter"
+    send "$TAB"
+    sleep 2
+    send "\r"
+
+    puts "\n>>> Search node setup commands sent - waiting for installation..."
+}
+
+################################################################################
+# SENSOR Installation Flow
+################################################################################
+
+if {$NODE_TYPE eq "sensor"} {
+    # STEP 1: Welcome - Enter for Yes
+    expect -re "."
+    sleep 2
+    puts "\n>>> Step 1: Welcome - pressing Enter for Yes"
+    send "\r"
+
+    # STEP 2: Install type - Enter for Install
+    sleep 2
+    puts "\n>>> Step 2: Install type - pressing Enter for Install"
+    send "\r"
+
+    # STEP 3: Deployment - Down, Down, Down, Enter for Distributed
+    sleep 2
+    puts "\n>>> Step 3: Deployment - selecting Distributed (3x Down, Enter)"
+    send "$DOWN"
+    sleep 2
+    send "$DOWN"
+    sleep 2
+    send "$DOWN"
+    sleep 2
+    send "\r"
+
+    # STEP 4: Existing deployment - Down, Enter
+    sleep 2
+    puts "\n>>> Step 4: Existing deployment - Down, Enter"
+    send "$DOWN"
+    sleep 2
+    send "\r"
+
+    # STEP 5: Role - Down, Down for SENSOR, Enter
+    sleep 2
+    puts "\n>>> Step 5: Role - selecting SENSOR (Down, Down, Enter)"
+    send "$DOWN"
+    sleep 2
+    send "$DOWN"
+    sleep 2
+    send "\r"
+
+    # STEP 6: License - Type AGREE
+    sleep 2
+    puts "\n>>> Step 6: License - typing AGREE"
+    send "AGREE\r"
+
+    # STEP 7: Network type - Down, Enter for Airgap
+    sleep 2
+    puts "\n>>> Step 7: Network type - selecting Airgap (Down, Enter)"
+    send "$DOWN"
+    sleep 2
+    send "\r"
+
+    # STEP 8: Hostname
+    sleep 2
+    puts "\n>>> Step 8: Hostname - entering $HOSTNAME"
+    clear_and_type $HOSTNAME
+    send "\r"
+
+    # STEP 9: Description - Leave blank
+    sleep 2
+    puts "\n>>> Step 9: Description - leaving blank"
+    send "\r"
+
+    # STEP 10: Management NIC - Enter
+    sleep 2
+    puts "\n>>> Step 10: Management NIC - pressing Enter"
+    send "\r"
+
+    # STEP 11: IP assignment - Enter for Static
+    sleep 2
+    puts "\n>>> Step 11: IP assignment - pressing Enter for Static"
+    send "\r"
+
+    # STEP 12: IP Address/CIDR
+    sleep 2
+    puts "\n>>> Step 12: IP Address - entering $STATIC_IP"
+    clear_and_type $STATIC_IP
+    send "\r"
+
+    # STEP 13: Gateway
+    sleep 2
+    puts "\n>>> Step 13: Gateway - entering $GATEWAY"
+    clear_and_type $GATEWAY
+    send "\r"
+
+    # STEP 14: DNS
+    sleep 2
+    puts "\n>>> Step 14: DNS - removing defaults, adding $DNS_SERVER"
+    send "d"
+    sleep 2
+    send "d"
+    sleep 2
+    send "a"
+    sleep 2
+    send "$DNS_SERVER\r"
+    sleep 2
+    send "\r"
+
+    # STEP 15: DNS Search Domain
+    sleep 2
+    puts "\n>>> Step 15: DNS Search Domain - entering $DNS_SEARCH_DOMAIN"
+    clear_and_type $DNS_SEARCH_DOMAIN
+    send "\r"
+
+    # STEP 16: Monitor interface - Enter (or manual selection needed)
+    sleep 2
+    puts "\n>>> Step 16: Monitor interface - pressing Enter"
+    send "\r"
+
+    # STEP 17: Manager hostname
+    sleep 2
+    puts "\n>>> Step 17: Manager hostname - entering $MANAGER_HOSTNAME"
+    clear_and_type $MANAGER_HOSTNAME
+    send "\r"
+
+    # STEP 18: Manager IP
+    sleep 2
+    puts "\n>>> Step 18: Manager IP - entering $MANAGER_IP"
+    clear_and_type $MANAGER_IP
+    send "\r"
+
+    # STEP 19: Docker defaults - Enter for Yes
+    sleep 2
+    puts "\n>>> Step 19: Docker defaults - pressing Enter for Yes"
+    send "\r"
+
+    # STEP 20: Web interface access - Enter for IP
+    sleep 2
+    puts "\n>>> Step 20: Web access method - pressing Enter for IP"
+    send "\r"
+
+    # STEP 21: Access confirmation - Enter
+    sleep 2
+    puts "\n>>> Step 21: Web access confirmation - pressing Enter"
+    send "\r"
+
+    # STEP 22: Analyst IP range
+    sleep 2
+    puts "\n>>> Step 22: Analyst IP range - entering $ANALYST_IP_RANGE"
+    clear_and_type $ANALYST_IP_RANGE
+    send "\r"
+
+    # STEP 23: Final confirmation - Tab, Enter
+    sleep 2
+    puts "\n>>> Step 23: Final confirmation - Tab, Enter"
+    send "$TAB"
+    sleep 2
+    send "\r"
+
+    puts "\n>>> Sensor setup commands sent - waiting for installation..."
+}
+
+################################################################################
+# Wait for completion
 ################################################################################
 
 expect {
-    # ========================================================================
-    # STEP 1: Welcome - "Yes" to start setup
-    # ========================================================================
-    -re "Continue\\?" {
-        puts "\n>>> Welcome screen - selecting Yes"
-        select_yes
-        exp_continue
+    -re "complete|finished|successfully" {
+        puts "\n========================================"
+        puts "Installation completed successfully!"
+        puts "========================================"
     }
-    -re "Would you like to continue\\?" {
-        puts "\n>>> Continue prompt - selecting Yes"
-        select_yes
-        exp_continue
+    -re "error|failed|Error|Failed" {
+        puts "\n========================================"
+        puts "ERROR detected during installation"
+        puts "========================================"
     }
-    -re "Welcome to Security Onion" {
-        puts "\n>>> Welcome screen"
-        sleep 0.5
-        select_yes
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 2: Install type - Select "Install"
-    # ========================================================================
-    -re "INSTALL|Install Security Onion" {
-        puts "\n>>> Install type - selecting Install"
-        send "I"
-        sleep 0.3
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 3: Deployment architecture - Select "Distributed"
-    # ========================================================================
-    -re -nocase "STANDALONE|DISTRIBUTED|deployment" {
-        puts "\n>>> Deployment type - selecting Distributed"
-        send "D"
-        sleep 0.3
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 4: Deployment state - New or Existing
-    # ========================================================================
-    -re -nocase "NEW|EXISTING|deployment state" {
-        if {$NODE_TYPE eq "manager"} {
-            puts "\n>>> Deployment state - selecting New Deployment (manager)"
-            send "N"
-        } else {
-            puts "\n>>> Deployment state - selecting Existing Deployment"
-            send "E"
-        }
-        sleep 0.3
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 5: Role selection - MANAGER, SEARCHNODE, or SENSOR
-    # ========================================================================
-    -re -nocase "MANAGER|SEARCHNODE|SENSOR|Select.*role|node type" {
-        puts "\n>>> Role selection - selecting [string toupper $NODE_TYPE]"
-        switch $NODE_TYPE {
-            "manager" { send "M" }
-            "search"  { send "S" }
-            "sensor"  {
-                # Navigate past SEARCHNODE to SENSOR
-                send "S"
-                sleep 0.2
-                send "\033\[B"
-                sleep 0.2
-            }
-        }
-        sleep 0.3
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 6: License agreement - Type "AGREE"
-    # ========================================================================
-    -re -nocase "license|AGREE|agreement" {
-        puts "\n>>> License agreement - typing AGREE"
-        sleep 0.3
-        send "AGREE\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 7: Network type - Select "Airgap"
-    # ========================================================================
-    -re -nocase "AIRGAP|STANDARD|network mode|connectivity" {
-        puts "\n>>> Network type - selecting Airgap"
-        send "A"
-        sleep 0.3
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 8: Hostname
-    # ========================================================================
-    -re -nocase "hostname" {
-        puts "\n>>> Hostname - entering $HOSTNAME"
-        sleep 0.3
-        clear_and_type $HOSTNAME
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 9: Description - Leave blank
-    # ========================================================================
-    -re -nocase "description" {
-        puts "\n>>> Description - leaving blank"
-        sleep 0.3
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 10: NIC Selection
-    # For manager/search: auto-select first
-    # For sensor: wait for user input (this will pause)
-    # ========================================================================
-    -re -nocase "interface|NIC|network interface|Select.*interface" {
-        if {$NODE_TYPE eq "sensor"} {
-            puts "\n>>> NIC Selection - SENSOR: Please select interfaces manually"
-            # For sensor, expect user to interact or use first interface
-            # Send Enter to accept default/first
-            sleep 1
-            send "\r"
-        } else {
-            puts "\n>>> NIC Selection - auto-selecting first interface"
-            sleep 0.5
-            send "\r"
-        }
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 10b: Monitor interface (Sensor only)
-    # ========================================================================
-    -re -nocase "monitor.*interface|sniffing|capture" {
-        puts "\n>>> Monitor interface selection"
-        sleep 0.5
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 11: IP assignment - Select "STATIC"
-    # ========================================================================
-    -re -nocase "STATIC|DHCP|IP.*assignment|addressing" {
-        puts "\n>>> IP assignment - selecting STATIC"
-        send "S"
-        sleep 0.3
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 12: IP Address / Network range
-    # ========================================================================
-    -re -nocase "IP address|Enter.*IP|address.*CIDR|network range" {
-        puts "\n>>> IP/Network - entering $STATIC_IP"
-        sleep 0.3
-        # Clear any existing value and enter our IP with CIDR
-        clear_and_type "$STATIC_IP/24"
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 13: Gateway
-    # ========================================================================
-    -re -nocase "gateway" {
-        puts "\n>>> Gateway - entering $GATEWAY"
-        sleep 0.3
-        clear_and_type $GATEWAY
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 14: DNS - Delete existing, add new
-    # ========================================================================
-    -re -nocase "DNS.*server|nameserver" {
-        puts "\n>>> DNS - configuring $DNS_SERVER"
-        sleep 0.5
-        handle_dns $DNS_SERVER
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 15: DNS Search Domain
-    # ========================================================================
-    -re -nocase "search.*domain|DNS.*domain" {
-        puts "\n>>> DNS Search Domain - entering $DNS_SEARCH_DOMAIN"
-        sleep 0.3
-        clear_and_type $DNS_SEARCH_DOMAIN
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 16: Docker IP range - Keep default (Yes)
-    # ========================================================================
-    -re -nocase "docker|Docker.*IP|container" {
-        puts "\n>>> Docker IP range - keeping default"
-        select_yes
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 17: Email/Username
-    # ========================================================================
-    -re -nocase "email|username" {
-        puts "\n>>> Email/Username - entering $ADMIN_EMAIL"
-        sleep 0.3
-        clear_and_type $ADMIN_EMAIL
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 18: Password
-    # ========================================================================
-    -re "password|Password" {
-        puts "\n>>> Password - entering (hidden)"
-        sleep 0.3
-        send "$ADMIN_PASSWORD\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 18b: Confirm Password
-    # ========================================================================
-    -re -nocase "confirm.*password|retype" {
-        puts "\n>>> Confirm password"
-        sleep 0.3
-        send "$ADMIN_PASSWORD\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 19: Web interface access - Select "IP"
-    # ========================================================================
-    -re -nocase "web.*interface|access.*method|IP.*HOSTNAME" {
-        puts "\n>>> Web interface access - selecting IP"
-        send "I"
-        sleep 0.3
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 20: Confirmation before IP range
-    # ========================================================================
-    -re -nocase "ready to proceed|continue with" {
-        puts "\n>>> Confirmation - selecting Yes"
-        select_yes
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 21: Analyst IP range
-    # ========================================================================
-    -re -nocase "analyst.*IP|allowed.*IP|access.*range|single.*range" {
-        puts "\n>>> Analyst IP range - entering $ANALYST_IP_RANGE"
-        sleep 0.3
-        clear_and_type $ANALYST_IP_RANGE
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 22: Manager hostname (for search/sensor nodes)
-    # ========================================================================
-    -re -nocase "manager.*hostname" {
-        if {$MANAGER_HOSTNAME ne ""} {
-            puts "\n>>> Manager hostname - entering $MANAGER_HOSTNAME"
-            sleep 0.3
-            clear_and_type $MANAGER_HOSTNAME
-            send "\r"
-        }
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 23: Manager IP (for search/sensor nodes)
-    # ========================================================================
-    -re -nocase "manager.*IP|manager.*address" {
-        if {$MANAGER_IP ne ""} {
-            puts "\n>>> Manager IP - entering $MANAGER_IP"
-            sleep 0.3
-            clear_and_type $MANAGER_IP
-            send "\r"
-        }
-        exp_continue
-    }
-
-    # ========================================================================
-    # STEP 23: Review/Confirm installation
-    # ========================================================================
-    -re -nocase "review|proceed|begin.*install|start.*install" {
-        puts "\n>>> Review - confirming installation"
-        select_yes
-        exp_continue
-    }
-
-    # ========================================================================
-    # Generic Yes/No prompts - default to Yes
-    # ========================================================================
-    -re "<Yes>.*<No>" {
-        puts "\n>>> Yes/No prompt - selecting Yes"
-        select_yes
-        exp_continue
-    }
-
-    # ========================================================================
-    # Press Enter to continue prompts
-    # ========================================================================
-    -re -nocase "Press.*ENTER|continue" {
-        puts "\n>>> Press Enter prompt"
-        send "\r"
-        exp_continue
-    }
-
-    # ========================================================================
-    # Installation progress - just wait
-    # ========================================================================
-    -re -nocase "Installing|Configuring|Setting up|Please wait" {
-        puts "\n>>> Installation in progress..."
-        exp_continue
-    }
-
-    # ========================================================================
-    # Completion
-    # ========================================================================
-    -re -nocase "complete|finished|successfully" {
-        puts "\n>>> Installation completed!"
-    }
-
-    # ========================================================================
-    # Error handling
-    # ========================================================================
-    -re -nocase "error|failed" {
-        puts "\n>>> ERROR detected in output"
-        exp_continue
-    }
-
-    # ========================================================================
-    # End of process
-    # ========================================================================
     eof {
         puts "\n========================================"
         puts "Security Onion setup process ended"
         puts "========================================"
     }
-
     timeout {
-        puts "\n>>> TIMEOUT - setup may still be running"
-        puts ">>> Check 'sudo so-status' for service status"
+        puts "\n========================================"
+        puts "Setup still running (timeout reached)"
+        puts "Check 'sudo so-status' for status"
+        puts "========================================"
     }
 }
 
