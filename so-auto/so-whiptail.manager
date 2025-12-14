@@ -13,6 +13,45 @@
 #   - Deterministic Manager install
 ###############################################################################
 
+
+###############################################################################
+# Minimal helper functions required by hard-coded overrides
+###############################################################################
+
+# No-op exit status checker (non-interactive mode)
+whiptail_check_exitstatus() {
+  return 0
+}
+
+# Minimal error message handler
+whiptail_error_message() {
+  local msg="$1"
+  echo "ERROR: $msg" >&2
+}
+
+# Build NIC lists similar to original logic
+filter_unused_nics() {
+  nic_list_management=()
+
+  # Use NetworkManager if available, otherwise fallback to sysfs
+  if command -v nmcli >/dev/null 2>&1; then
+    while IFS=: read -r dev type state _; do
+      [[ "$dev" == "lo" ]] && continue
+      [[ "$state" != "connected" && "$state" != "disconnected" ]] && continue
+      nic_list_management+=( "$dev" "" )
+    done < <(nmcli -t -f DEVICE,TYPE,STATE dev status | grep ':ethernet:')
+  fi
+
+  # Fallback if nmcli yielded nothing
+  if [[ ${#nic_list_management[@]} -eq 0 ]]; then
+    for dev in /sys/class/net/*; do
+      dev="$(basename "$dev")"
+      [[ "$dev" == "lo" ]] && continue
+      nic_list_management+=( "$dev" "" )
+    done
+  fi
+}
+
 ###############################################################################
 # HARD-CODED MANAGER ANSWERS (no prompts)
 ###############################################################################
