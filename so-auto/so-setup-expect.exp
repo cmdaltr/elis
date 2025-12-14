@@ -46,8 +46,8 @@ puts "Gateway: $GATEWAY"
 puts "DNS: $DNS_SERVER"
 puts "========================================"
 
-# Start so-setup
-spawn sudo so-setup
+# Start so-setup with iso parameter
+spawn sudo /home/tester/SecurityOnion/setup/so-setup iso
 
 ################################################################################
 # Helper procedures
@@ -139,7 +139,7 @@ expect {
     # ========================================================================
     # STEP 3: Deployment architecture - Select "Distributed"
     # ========================================================================
-    -re "STANDALONE|DISTRIBUTED|deployment" -i {
+    -re -nocase "STANDALONE|DISTRIBUTED|deployment" {
         puts "\n>>> Deployment type - selecting Distributed"
         send "D"
         sleep 0.3
@@ -150,7 +150,7 @@ expect {
     # ========================================================================
     # STEP 4: Deployment state - New or Existing
     # ========================================================================
-    -re "NEW|EXISTING|deployment state" -i {
+    -re -nocase "NEW|EXISTING|deployment state" {
         if {$NODE_TYPE eq "manager"} {
             puts "\n>>> Deployment state - selecting New Deployment (manager)"
             send "N"
@@ -166,7 +166,7 @@ expect {
     # ========================================================================
     # STEP 5: Role selection - MANAGER, SEARCHNODE, or SENSOR
     # ========================================================================
-    -re "MANAGER|SEARCHNODE|SENSOR|Select.*role|node type" -i {
+    -re -nocase "MANAGER|SEARCHNODE|SENSOR|Select.*role|node type" {
         puts "\n>>> Role selection - selecting [string toupper $NODE_TYPE]"
         switch $NODE_TYPE {
             "manager" { send "M" }
@@ -187,7 +187,7 @@ expect {
     # ========================================================================
     # STEP 6: License agreement - Type "AGREE"
     # ========================================================================
-    -re "license|AGREE|agreement" -i {
+    -re -nocase "license|AGREE|agreement" {
         puts "\n>>> License agreement - typing AGREE"
         sleep 0.3
         send "AGREE\r"
@@ -197,7 +197,7 @@ expect {
     # ========================================================================
     # STEP 7: Network type - Select "Airgap"
     # ========================================================================
-    -re "AIRGAP|STANDARD|network mode|connectivity" -i {
+    -re -nocase "AIRGAP|STANDARD|network mode|connectivity" {
         puts "\n>>> Network type - selecting Airgap"
         send "A"
         sleep 0.3
@@ -208,7 +208,7 @@ expect {
     # ========================================================================
     # STEP 8: Hostname
     # ========================================================================
-    -re "hostname|Hostname" -i {
+    -re -nocase "hostname" {
         puts "\n>>> Hostname - entering $HOSTNAME"
         sleep 0.3
         clear_and_type $HOSTNAME
@@ -219,7 +219,7 @@ expect {
     # ========================================================================
     # STEP 9: Description - Leave blank
     # ========================================================================
-    -re "description|Description" -i {
+    -re -nocase "description" {
         puts "\n>>> Description - leaving blank"
         sleep 0.3
         send "\r"
@@ -231,7 +231,7 @@ expect {
     # For manager/search: auto-select first
     # For sensor: wait for user input (this will pause)
     # ========================================================================
-    -re "interface|NIC|network interface|Select.*interface" -i {
+    -re -nocase "interface|NIC|network interface|Select.*interface" {
         if {$NODE_TYPE eq "sensor"} {
             puts "\n>>> NIC Selection - SENSOR: Please select interfaces manually"
             # For sensor, expect user to interact or use first interface
@@ -249,7 +249,7 @@ expect {
     # ========================================================================
     # STEP 10b: Monitor interface (Sensor only)
     # ========================================================================
-    -re "monitor.*interface|sniffing|capture" -i {
+    -re -nocase "monitor.*interface|sniffing|capture" {
         puts "\n>>> Monitor interface selection"
         sleep 0.5
         send "\r"
@@ -259,7 +259,7 @@ expect {
     # ========================================================================
     # STEP 11: IP assignment - Select "STATIC"
     # ========================================================================
-    -re "STATIC|DHCP|IP.*assignment|addressing" -i {
+    -re -nocase "STATIC|DHCP|IP.*assignment|addressing" {
         puts "\n>>> IP assignment - selecting STATIC"
         send "S"
         sleep 0.3
@@ -270,7 +270,7 @@ expect {
     # ========================================================================
     # STEP 12: IP Address / Network range
     # ========================================================================
-    -re "IP address|Enter.*IP|address.*CIDR|network range" -i {
+    -re -nocase "IP address|Enter.*IP|address.*CIDR|network range" {
         puts "\n>>> IP/Network - entering $STATIC_IP"
         sleep 0.3
         # Clear any existing value and enter our IP with CIDR
@@ -282,7 +282,7 @@ expect {
     # ========================================================================
     # STEP 13: Gateway
     # ========================================================================
-    -re "gateway|Gateway" -i {
+    -re -nocase "gateway" {
         puts "\n>>> Gateway - entering $GATEWAY"
         sleep 0.3
         clear_and_type $GATEWAY
@@ -293,7 +293,7 @@ expect {
     # ========================================================================
     # STEP 14: DNS - Delete existing, add new
     # ========================================================================
-    -re "DNS.*server|nameserver" -i {
+    -re -nocase "DNS.*server|nameserver" {
         puts "\n>>> DNS - configuring $DNS_SERVER"
         sleep 0.5
         handle_dns $DNS_SERVER
@@ -303,7 +303,7 @@ expect {
     # ========================================================================
     # STEP 15: DNS Search Domain
     # ========================================================================
-    -re "search.*domain|DNS.*domain" -i {
+    -re -nocase "search.*domain|DNS.*domain" {
         puts "\n>>> DNS Search Domain - entering $DNS_SEARCH_DOMAIN"
         sleep 0.3
         clear_and_type $DNS_SEARCH_DOMAIN
@@ -314,7 +314,7 @@ expect {
     # ========================================================================
     # STEP 16: Docker IP range - Keep default (Yes)
     # ========================================================================
-    -re "docker|Docker.*IP|container" -i {
+    -re -nocase "docker|Docker.*IP|container" {
         puts "\n>>> Docker IP range - keeping default"
         select_yes
         exp_continue
@@ -323,7 +323,7 @@ expect {
     # ========================================================================
     # STEP 17: Email/Username
     # ========================================================================
-    -re "email|Email|username|Username" -i {
+    -re -nocase "email|username" {
         puts "\n>>> Email/Username - entering $ADMIN_EMAIL"
         sleep 0.3
         clear_and_type $ADMIN_EMAIL
@@ -344,7 +344,7 @@ expect {
     # ========================================================================
     # STEP 18b: Confirm Password
     # ========================================================================
-    -re "confirm.*password|Confirm.*Password|Retype|retype" -i {
+    -re -nocase "confirm.*password|retype" {
         puts "\n>>> Confirm password"
         sleep 0.3
         send "$ADMIN_PASSWORD\r"
@@ -354,7 +354,7 @@ expect {
     # ========================================================================
     # STEP 19: Web interface access - Select "IP"
     # ========================================================================
-    -re "web.*interface|access.*method|IP.*HOSTNAME" -i {
+    -re -nocase "web.*interface|access.*method|IP.*HOSTNAME" {
         puts "\n>>> Web interface access - selecting IP"
         send "I"
         sleep 0.3
@@ -365,7 +365,7 @@ expect {
     # ========================================================================
     # STEP 20: Confirmation before IP range
     # ========================================================================
-    -re "ready to proceed|continue with" -i {
+    -re -nocase "ready to proceed|continue with" {
         puts "\n>>> Confirmation - selecting Yes"
         select_yes
         exp_continue
@@ -374,7 +374,7 @@ expect {
     # ========================================================================
     # STEP 21: Analyst IP range
     # ========================================================================
-    -re "analyst.*IP|allowed.*IP|access.*range|single.*range" -i {
+    -re -nocase "analyst.*IP|allowed.*IP|access.*range|single.*range" {
         puts "\n>>> Analyst IP range - entering $ANALYST_IP_RANGE"
         sleep 0.3
         clear_and_type $ANALYST_IP_RANGE
@@ -385,7 +385,7 @@ expect {
     # ========================================================================
     # STEP 22: Manager hostname (for search/sensor nodes)
     # ========================================================================
-    -re "manager.*hostname|Manager.*hostname" -i {
+    -re -nocase "manager.*hostname" {
         if {$MANAGER_HOSTNAME ne ""} {
             puts "\n>>> Manager hostname - entering $MANAGER_HOSTNAME"
             sleep 0.3
@@ -398,7 +398,7 @@ expect {
     # ========================================================================
     # STEP 23: Manager IP (for search/sensor nodes)
     # ========================================================================
-    -re "manager.*IP|Manager.*IP|Manager.*address" -i {
+    -re -nocase "manager.*IP|manager.*address" {
         if {$MANAGER_IP ne ""} {
             puts "\n>>> Manager IP - entering $MANAGER_IP"
             sleep 0.3
@@ -411,7 +411,7 @@ expect {
     # ========================================================================
     # STEP 23: Review/Confirm installation
     # ========================================================================
-    -re "review|Review|proceed|Proceed|begin.*install|start.*install" -i {
+    -re -nocase "review|proceed|begin.*install|start.*install" {
         puts "\n>>> Review - confirming installation"
         select_yes
         exp_continue
@@ -429,7 +429,7 @@ expect {
     # ========================================================================
     # Press Enter to continue prompts
     # ========================================================================
-    -re "Press.*ENTER|press.*enter|continue" -i {
+    -re -nocase "Press.*ENTER|continue" {
         puts "\n>>> Press Enter prompt"
         send "\r"
         exp_continue
@@ -438,7 +438,7 @@ expect {
     # ========================================================================
     # Installation progress - just wait
     # ========================================================================
-    -re "Installing|Configuring|Setting up|Please wait" -i {
+    -re -nocase "Installing|Configuring|Setting up|Please wait" {
         puts "\n>>> Installation in progress..."
         exp_continue
     }
@@ -446,14 +446,14 @@ expect {
     # ========================================================================
     # Completion
     # ========================================================================
-    -re "complete|Complete|finished|Finished|successfully" -i {
+    -re -nocase "complete|finished|successfully" {
         puts "\n>>> Installation completed!"
     }
 
     # ========================================================================
     # Error handling
     # ========================================================================
-    -re "error|Error|failed|Failed" -i {
+    -re -nocase "error|failed" {
         puts "\n>>> ERROR detected in output"
         exp_continue
     }
