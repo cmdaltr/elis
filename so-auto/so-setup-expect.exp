@@ -71,11 +71,19 @@ proc clear_and_type {value} {
 ################################################################################
 
 if {$NODE_TYPE eq "manager"} {
-    # STEP 1: Welcome - Enter for Yes
-    expect -re "."
-    sleep 2
-    puts "\n>>> Step 1: Welcome - pressing Enter for Yes"
-    send "\r"
+    # STEP 1: Welcome - Wait for dialog to appear, then Enter for Yes
+    puts "\n>>> Waiting for installer to load..."
+    expect {
+        -re "Yes|No|Continue|Welcome" {
+            puts "\n>>> Step 1: Welcome dialog detected - pressing Enter for Yes"
+            sleep 1
+            send "\r"
+        }
+        timeout {
+            puts "\n>>> Timeout waiting for welcome screen"
+            exit 1
+        }
+    }
 
     # STEP 2: Install type - Enter for Install (first option)
     sleep 2
@@ -138,8 +146,8 @@ if {$NODE_TYPE eq "manager"} {
 
     # STEP 12: IP Address/CIDR
     sleep 2
-    puts "\n>>> Step 12: IP Address - entering $STATIC_IP"
-    clear_and_type $STATIC_IP
+    puts "\n>>> Step 12: IP Address - entering $STATIC_IP/24"
+    clear_and_type "$STATIC_IP/24"
     send "\r"
 
     # STEP 13: Gateway
@@ -215,11 +223,19 @@ if {$NODE_TYPE eq "manager"} {
 ################################################################################
 
 if {$NODE_TYPE eq "search"} {
-    # STEP 1: Welcome - Enter for Yes
-    expect -re "."
-    sleep 2
-    puts "\n>>> Step 1: Welcome - pressing Enter for Yes"
-    send "\r"
+    # STEP 1: Welcome - Wait for dialog to appear, then Enter for Yes
+    puts "\n>>> Waiting for installer to load..."
+    expect {
+        -re "Yes|No|Continue|Welcome" {
+            puts "\n>>> Step 1: Welcome dialog detected - pressing Enter for Yes"
+            sleep 1
+            send "\r"
+        }
+        timeout {
+            puts "\n>>> Timeout waiting for welcome screen"
+            exit 1
+        }
+    }
 
     # STEP 2: Install type - Enter for Install
     sleep 2
@@ -286,8 +302,8 @@ if {$NODE_TYPE eq "search"} {
 
     # STEP 12: IP Address/CIDR
     sleep 2
-    puts "\n>>> Step 12: IP Address - entering $STATIC_IP"
-    clear_and_type $STATIC_IP
+    puts "\n>>> Step 12: IP Address - entering $STATIC_IP/24"
+    clear_and_type "$STATIC_IP/24"
     send "\r"
 
     # STEP 13: Gateway
@@ -363,11 +379,19 @@ if {$NODE_TYPE eq "search"} {
 ################################################################################
 
 if {$NODE_TYPE eq "sensor"} {
-    # STEP 1: Welcome - Enter for Yes
-    expect -re "."
-    sleep 2
-    puts "\n>>> Step 1: Welcome - pressing Enter for Yes"
-    send "\r"
+    # STEP 1: Welcome - Wait for dialog to appear, then Enter for Yes
+    puts "\n>>> Waiting for installer to load..."
+    expect {
+        -re "Yes|No|Continue|Welcome" {
+            puts "\n>>> Step 1: Welcome dialog detected - pressing Enter for Yes"
+            sleep 1
+            send "\r"
+        }
+        timeout {
+            puts "\n>>> Timeout waiting for welcome screen"
+            exit 1
+        }
+    }
 
     # STEP 2: Install type - Enter for Install
     sleep 2
@@ -436,8 +460,8 @@ if {$NODE_TYPE eq "sensor"} {
 
     # STEP 12: IP Address/CIDR
     sleep 2
-    puts "\n>>> Step 12: IP Address - entering $STATIC_IP"
-    clear_and_type $STATIC_IP
+    puts "\n>>> Step 12: IP Address - entering $STATIC_IP/24"
+    clear_and_type "$STATIC_IP/24"
     send "\r"
 
     # STEP 13: Gateway
