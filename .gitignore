@@ -20,3 +20,6 @@ xcode/
 
 # ISO files
 #*.iso
+
+# Claude Code
+.claude/
