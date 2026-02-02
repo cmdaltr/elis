@@ -2,7 +2,7 @@ Brotli==1.1.0
 certifi==2025.7.14
 elastic-transport==8.17.1
 elasticsearch==9.0.2
-inflate64==1.0.3
+inflate64==1.0.4
 multivolumefile==0.2.3
 psutil==7.0.0
 py7zr==1.0.0
