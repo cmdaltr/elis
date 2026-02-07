@@ -1,0 +1,28 @@
+Feb  7 08:00:01 dhcp-srv-01 dhcpd[1234]: DHCPDISCOVER from 00:1a:2b:3c:4d:5e via eth0
+Feb  7 08:00:01 dhcp-srv-01 dhcpd[1234]: DHCPOFFER on 192.168.1.100 to 00:1a:2b:3c:4d:5e via eth0
+Feb  7 08:00:02 dhcp-srv-01 dhcpd[1234]: DHCPREQUEST for 192.168.1.100 from 00:1a:2b:3c:4d:5e via eth0
+Feb  7 08:00:02 dhcp-srv-01 dhcpd[1234]: DHCPACK on 192.168.1.100 to 00:1a:2b:3c:4d:5e (WORKSTATION01) via eth0
+Feb  7 08:05:15 dhcp-srv-01 dhcpd[1234]: DHCPDISCOVER from 00:2b:3c:4d:5e:6f via eth0
+Feb  7 08:05:15 dhcp-srv-01 dhcpd[1234]: DHCPOFFER on 192.168.1.55 to 00:2b:3c:4d:5e:6f via eth0
+Feb  7 08:05:16 dhcp-srv-01 dhcpd[1234]: DHCPREQUEST for 192.168.1.55 from 00:2b:3c:4d:5e:6f via eth0
+Feb  7 08:05:16 dhcp-srv-01 dhcpd[1234]: DHCPACK on 192.168.1.55 to 00:2b:3c:4d:5e:6f (MACBOOK-JDOE) via eth0
+Feb  7 08:10:22 dhcp-srv-01 dhcpd[1234]: DHCPDISCOVER from 00:de:ad:be:ef:00 via eth0
+Feb  7 08:10:22 dhcp-srv-01 dhcpd[1234]: DHCPOFFER on 192.168.1.200 to 00:de:ad:be:ef:00 via eth0
+Feb  7 08:10:23 dhcp-srv-01 dhcpd[1234]: DHCPREQUEST for 192.168.1.200 from 00:de:ad:be:ef:00 via eth0
+Feb  7 08:10:23 dhcp-srv-01 dhcpd[1234]: DHCPACK on 192.168.1.200 to 00:de:ad:be:ef:00 (UNKNOWN-HOST) via eth0
+Feb  7 08:15:33 dhcp-srv-01 dhcpd[1234]: DHCPDISCOVER from 00:3c:4d:5e:6f:7a via eth0
+Feb  7 08:15:33 dhcp-srv-01 dhcpd[1234]: DHCPOFFER on 192.168.1.50 to 00:3c:4d:5e:6f:7a via eth0
+Feb  7 08:15:34 dhcp-srv-01 dhcpd[1234]: DHCPREQUEST for 192.168.1.50 from 00:3c:4d:5e:6f:7a via eth0
+Feb  7 08:15:34 dhcp-srv-01 dhcpd[1234]: DHCPACK on 192.168.1.50 to 00:3c:4d:5e:6f:7a (LAPTOP-JSMITH) via eth0
+Feb  7 08:20:00 dhcp-srv-01 dhcpd[1234]: DHCPRELEASE of 192.168.1.75 from 00:4d:5e:6f:7a:8b (GUEST-LAPTOP) via eth0
+Feb  7 08:25:15 dhcp-srv-01 dhcpd[1234]: DHCPNAK on 192.168.1.250 to 00:de:ad:be:ef:01 via eth0: lease 192.168.1.250 unavailable
+Feb  7 08:30:00 dhcp-srv-01 dhcpd[1234]: DHCPDECLINE of 192.168.1.201 from 00:de:ad:be:ef:02 via eth0: already in use
+Feb  7 08:35:22 dhcp-srv-01 dhcpd[1234]: DHCPINFORM from 192.168.1.100 via eth0
+Feb  7 08:40:33 dhcp-srv-01 dhcpd[1234]: DHCPDISCOVER from 00:ba:dc:0d:e0:00 via eth0: network 192.168.1.0/24: no free leases
+Feb  7 08:45:00 dhcp-srv-01 dhcpd[1234]: uid lease 192.168.1.200 for client 00:de:ad:be:ef:00 is duplicate on 192.168.1.0/24
+Feb  7 08:50:15 dhcp-srv-01 dhcpd[1234]: DHCPDISCOVER from 00:de:ad:be:ef:00 via eth0
+Feb  7 08:50:15 dhcp-srv-01 dhcpd[1234]: DHCPOFFER on 192.168.1.200 to 00:de:ad:be:ef:00 via eth0
+Feb  7 08:50:16 dhcp-srv-01 dhcpd[1234]: DHCPREQUEST for 192.168.1.200 from 00:de:ad:be:ef:00 via eth0
+Feb  7 08:50:16 dhcp-srv-01 dhcpd[1234]: DHCPACK on 192.168.1.200 to 00:de:ad:be:ef:00 (UNKNOWN-HOST) via eth0
+Feb  7 08:55:30 dhcp-srv-01 dhcpd[1234]: DHCPEXPIRE on 192.168.1.175 to 00:5e:6f:7a:8b:9c
+Feb  7 09:00:00 dhcp-srv-01 dhcpd[1234]: reuse_lease: lease age 86401 (secs) under 25% threshold, reply with unaltered lease for 192.168.1.100

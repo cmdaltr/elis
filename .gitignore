@@ -1,6 +1,6 @@
 # Testing Environment
-TEST
-TEST/*
+TEST/archive/
+TEST/sosetup_success.log
 elis/*/__pycache__/*
 
 # Python Tools for Visual Studio (PTVS)

@@ -1,0 +1,28 @@
+Feb 07 2026 08:15:22 10.1.1.1 %ASA-6-302013: Built inbound TCP connection 1482751 for outside:203.0.113.45/443 (203.0.113.45/443) to inside:192.168.1.100/52341 (10.1.1.100/52341)
+Feb 07 2026 08:15:23 10.1.1.1 %ASA-6-302014: Teardown TCP connection 1482750 for outside:203.0.113.45/443 to inside:192.168.1.100/52340 duration 0:00:30 bytes 15234 TCP FINs
+Feb 07 2026 08:17:45 10.1.1.1 %ASA-4-106023: Deny tcp src outside:185.234.72.15/44231 dst inside:192.168.1.50/3389 by access-group "outside_access_in" [0x0, 0x0]
+Feb 07 2026 08:17:46 10.1.1.1 %ASA-4-106023: Deny tcp src outside:185.234.72.15/44232 dst inside:192.168.1.50/3389 by access-group "outside_access_in" [0x0, 0x0]
+Feb 07 2026 08:17:47 10.1.1.1 %ASA-4-106023: Deny tcp src outside:185.234.72.15/44233 dst inside:192.168.1.50/3389 by access-group "outside_access_in" [0x0, 0x0]
+Feb 07 2026 08:18:01 10.1.1.1 %ASA-6-113004: AAA user authentication Successful : server = 10.1.1.5 : user = jsmith
+Feb 07 2026 08:18:02 10.1.1.1 %ASA-6-716001: Group <VPN-Users> User <jsmith> IP <98.76.54.32> WebVPN session started
+Feb 07 2026 08:22:15 10.1.1.1 %ASA-4-733100: [Scanning] drop rate-1 exceeded. Current burst rate is 25 per second, max configured rate is 10; Current average rate is 18 per second, max configured rate is 5; Cumulative total count is 1523
+Feb 07 2026 08:25:33 10.1.1.1 %ASA-6-302013: Built inbound TCP connection 1482890 for outside:45.33.32.156/80 (45.33.32.156/80) to inside:192.168.1.105/49521 (10.1.1.105/49521)
+Feb 07 2026 08:30:12 10.1.1.1 %ASA-4-106023: Deny tcp src inside:192.168.1.200/54123 dst outside:185.220.101.35/4444 by access-group "inside_access_out" [0x0, 0x0]
+Feb 07 2026 08:30:13 10.1.1.1 %ASA-4-106023: Deny tcp src inside:192.168.1.200/54124 dst outside:185.220.101.35/4444 by access-group "inside_access_out" [0x0, 0x0]
+Feb 07 2026 08:31:00 10.1.1.1 %ASA-5-111008: User 'admin' executed the 'show running-config' command
+Feb 07 2026 08:35:22 10.1.1.1 %ASA-6-113005: AAA user authentication Rejected : reason = AAA failure : server = 10.1.1.5 : user = administrator
+Feb 07 2026 08:35:25 10.1.1.1 %ASA-6-113005: AAA user authentication Rejected : reason = AAA failure : server = 10.1.1.5 : user = administrator
+Feb 07 2026 08:35:28 10.1.1.1 %ASA-6-113005: AAA user authentication Rejected : reason = AAA failure : server = 10.1.1.5 : user = admin
+Feb 07 2026 08:35:31 10.1.1.1 %ASA-6-113005: AAA user authentication Rejected : reason = AAA failure : server = 10.1.1.5 : user = root
+Feb 07 2026 08:35:34 10.1.1.1 %ASA-6-113005: AAA user authentication Rejected : reason = AAA failure : server = 10.1.1.5 : user = cisco
+Feb 07 2026 08:40:15 10.1.1.1 %ASA-6-302013: Built outbound TCP connection 1483102 for outside:13.107.42.14/443 (13.107.42.14/443) to inside:192.168.1.55/61234 (10.1.1.55/61234)
+Feb 07 2026 08:45:00 10.1.1.1 %ASA-4-419002: Duplicate TCP SYN from outside:91.189.114.8/12345 to inside:192.168.1.10/22 with different initial sequence number
+Feb 07 2026 08:50:33 10.1.1.1 %ASA-6-305011: Built dynamic TCP translation from inside:192.168.1.150/49876 to outside:10.1.1.150/49876
+Feb 07 2026 08:55:12 10.1.1.1 %ASA-3-710003: TCP access denied by ACL from 192.168.1.200/54321 to outside:23.129.64.142/443 on interface inside
+Feb 07 2026 09:00:45 10.1.1.1 %ASA-6-716002: Group <VPN-Users> User <jsmith> IP <98.76.54.32> WebVPN session terminated: User Requested
+Feb 07 2026 09:05:22 10.1.1.1 %ASA-4-405001: Received ARP request collision from 192.168.1.200 on interface inside with existing ARP entry 192.168.1.200, MAC 00:1a:2b:3c:4d:5e
+Feb 07 2026 09:10:15 10.1.1.1 %ASA-6-302020: Built inbound ICMP connection for faddr 8.8.8.8/0 gaddr 10.1.1.1/0 laddr 192.168.1.10/0
+Feb 07 2026 09:15:30 10.1.1.1 %ASA-4-106023: Deny udp src inside:192.168.1.200/53 dst outside:185.220.101.1/53 by access-group "inside_access_out" [0x0, 0x0]
+Feb 07 2026 09:20:00 10.1.1.1 %ASA-6-113004: AAA user authentication Successful : server = 10.1.1.5 : user = svc_backup
+Feb 07 2026 09:25:45 10.1.1.1 %ASA-5-502103: User priv level changed: Uname: admin From: 1 To: 15
+Feb 07 2026 09:30:12 10.1.1.1 %ASA-4-733100: [TCP Intercept] drop rate-1 exceeded. Current burst rate is 50 per second, max configured rate is 25; Current average rate is 35 per second

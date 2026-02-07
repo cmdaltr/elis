@@ -1,0 +1,36 @@
+Feb  7 08:00:01 mail-srv-01 postfix/smtpd[12345]: connect from unknown[185.234.72.15]
+Feb  7 08:00:02 mail-srv-01 postfix/smtpd[12345]: warning: unknown[185.234.72.15]: SASL LOGIN authentication failed: authentication failure
+Feb  7 08:00:03 mail-srv-01 postfix/smtpd[12345]: warning: unknown[185.234.72.15]: SASL LOGIN authentication failed: authentication failure
+Feb  7 08:00:04 mail-srv-01 postfix/smtpd[12345]: warning: unknown[185.234.72.15]: SASL LOGIN authentication failed: authentication failure
+Feb  7 08:00:05 mail-srv-01 postfix/smtpd[12345]: too many errors after AUTH from unknown[185.234.72.15]
+Feb  7 08:00:05 mail-srv-01 postfix/smtpd[12345]: disconnect from unknown[185.234.72.15] ehlo=1 auth=0/3 quit=1 commands=2/5
+Feb  7 08:05:15 mail-srv-01 postfix/smtpd[12346]: connect from mail.corp.example.com[10.0.1.25]
+Feb  7 08:05:16 mail-srv-01 postfix/smtpd[12346]: A1B2C3D4E5: client=mail.corp.example.com[10.0.1.25], sasl_method=LOGIN, sasl_username=jsmith@corp.example.com
+Feb  7 08:05:17 mail-srv-01 postfix/cleanup[12347]: A1B2C3D4E5: message-id=<20260207080515.A1B2C3D4E5@mail.corp.example.com>
+Feb  7 08:05:17 mail-srv-01 postfix/qmgr[1234]: A1B2C3D4E5: from=<jsmith@corp.example.com>, size=15234, nrcpt=1 (queue active)
+Feb  7 08:05:18 mail-srv-01 postfix/smtp[12348]: A1B2C3D4E5: to=<external@partner.com>, relay=mx.partner.com[203.0.113.50]:25, delay=1.2, delays=0.5/0.1/0.3/0.3, dsn=2.0.0, status=sent (250 2.0.0 Ok: queued as B2C3D4E5F6)
+Feb  7 08:05:18 mail-srv-01 postfix/qmgr[1234]: A1B2C3D4E5: removed
+Feb  7 08:10:22 mail-srv-01 postfix/smtpd[12349]: connect from unknown[91.189.114.8]
+Feb  7 08:10:23 mail-srv-01 postfix/smtpd[12349]: NOQUEUE: reject: RCPT from unknown[91.189.114.8]: 554 5.7.1 <unknown[91.189.114.8]>: Client host rejected: Access denied; from=<spam@malicious.ru> to=<all-staff@corp.example.com> proto=ESMTP helo=<spam-server.malicious.ru>
+Feb  7 08:10:23 mail-srv-01 postfix/smtpd[12349]: disconnect from unknown[91.189.114.8] ehlo=1 mail=1 rcpt=0/1 quit=1 commands=3/4
+Feb  7 08:15:33 mail-srv-01 postfix/smtpd[12350]: connect from mail.corp.example.com[10.0.1.25]
+Feb  7 08:15:34 mail-srv-01 postfix/smtpd[12350]: C3D4E5F6G7: client=mail.corp.example.com[10.0.1.25], sasl_method=LOGIN, sasl_username=hr@corp.example.com
+Feb  7 08:15:35 mail-srv-01 postfix/cleanup[12351]: C3D4E5F6G7: message-id=<20260207081533.C3D4E5F6G7@mail.corp.example.com>
+Feb  7 08:15:35 mail-srv-01 postfix/qmgr[1234]: C3D4E5F6G7: from=<hr@corp.example.com>, size=5678901, nrcpt=1 (queue active)
+Feb  7 08:15:36 mail-srv-01 postfix/smtp[12352]: C3D4E5F6G7: to=<personal-email@gmail.com>, relay=gmail-smtp-in.l.google.com[172.217.14.26]:25, delay=1.5, delays=0.5/0.1/0.4/0.5, dsn=2.0.0, status=sent (250 2.0.0 Ok: queued)
+Feb  7 08:15:36 mail-srv-01 postfix/qmgr[1234]: C3D4E5F6G7: removed
+Feb  7 08:20:00 mail-srv-01 postfix/smtpd[12353]: connect from mail.corp.example.com[10.0.1.25]
+Feb  7 08:20:01 mail-srv-01 postfix/smtpd[12353]: D4E5F6G7H8: client=mail.corp.example.com[10.0.1.25], sasl_method=LOGIN, sasl_username=jsmith@corp.example.com
+Feb  7 08:20:02 mail-srv-01 postfix/cleanup[12354]: D4E5F6G7H8: message-id=<20260207082000.D4E5F6G7H8@mail.corp.example.com>
+Feb  7 08:20:02 mail-srv-01 postfix/qmgr[1234]: D4E5F6G7H8: from=<jsmith@corp.example.com>, size=98765432, nrcpt=1 (queue active)
+Feb  7 08:20:03 mail-srv-01 postfix/smtp[12355]: warning: D4E5F6G7H8: to=<external-attacker@evil-domain.ru>, message size 98765432 exceeds size limit
+Feb  7 08:20:03 mail-srv-01 postfix/smtp[12355]: D4E5F6G7H8: to=<external-attacker@evil-domain.ru>, relay=none, delay=1.0, delays=0.5/0.1/0.4/0, dsn=5.3.4, status=bounced (message size 98765432 exceeds size limit)
+Feb  7 08:25:15 mail-srv-01 opendkim[5678]: A1B2C3D4E5: DKIM-Signature field added (s=mail, d=corp.example.com)
+Feb  7 08:30:00 mail-srv-01 amavis[6789]: (12356-01) Passed SPAM, [185.234.72.15] <spam@malicious.ru> -> <jsmith@corp.example.com>, Message-ID: <spam123@malicious.ru>, Hits: 15.234
+Feb  7 08:35:22 mail-srv-01 postfix/smtpd[12356]: warning: hostname phishing.example.net does not resolve to address 185.234.72.15: Name or service not known
+Feb  7 08:40:33 mail-srv-01 amavis[6789]: (12357-01) Blocked INFECTED (Eicar-Test-Signature), [91.189.114.8] <infected@malware.net> -> <finance@corp.example.com>, Message-ID: <malware456@malware.net>, Hits: -
+Feb  7 08:45:00 mail-srv-01 postfix/smtpd[12357]: connect from mx.partner.com[203.0.113.50]
+Feb  7 08:45:01 mail-srv-01 postfix/smtpd[12357]: E5F6G7H8I9: client=mx.partner.com[203.0.113.50]
+Feb  7 08:45:02 mail-srv-01 postfix/cleanup[12358]: E5F6G7H8I9: message-id=<reply-20260207084500@partner.com>
+Feb  7 08:45:02 mail-srv-01 postfix/qmgr[1234]: E5F6G7H8I9: from=<external@partner.com>, size=2345, nrcpt=1 (queue active)
+Feb  7 08:45:03 mail-srv-01 postfix/local[12359]: E5F6G7H8I9: to=<jsmith@corp.example.com>, relay=local, delay=0.8, delays=0.3/0.1/0/0.4, dsn=2.0.0, status=sent (delivered to maildir)
